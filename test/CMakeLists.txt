@@ -45,6 +45,14 @@ if (WIN32 AND BUILD_SHARED_LIBS AND NOT DEFINED ENV{CONDA_BUILD})
             COMMENT "Copying runtime DLLs next to MCFClassSolver_test.exe")
 endif ()
 
+# The batch-l tester runs over the larger instances produced by the dmx2nc4
+# tool of the MCFBlock module; build that target as a setup fixture so the
+# instances exist before the test runs.
+add_test(NAME MCFClassSolver_run_dmx2nc4
+         COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target run_dmx2nc4)
+set_tests_properties(MCFClassSolver_run_dmx2nc4
+                     PROPERTIES FIXTURES_SETUP mcfcs_dmx2nc4_generated)
+
 # Add a test for each batch file
 file(GLOB BATCH_FILES "${CMAKE_CURRENT_SOURCE_DIR}/batch"
                       "${CMAKE_CURRENT_SOURCE_DIR}/batch-l")
@@ -61,6 +69,11 @@ foreach (BATCH_FILE ${BATCH_FILES})
                  COMMAND "C:/Program Files/Git/bin/bash.exe"
                  "${BATCH_FILE}" "$<TARGET_FILE:MCFClassSolver_test>"
                  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+    endif ()
+    # batch-l reads the larger instances produced by dmx2nc4
+    if (BATCH_NAME STREQUAL "batch-l")
+        set_tests_properties(MCFClassSolver_test/${BATCH_NAME}
+                             PROPERTIES FIXTURES_REQUIRED mcfcs_dmx2nc4_generated)
     endif ()
 endforeach ()
 
