@@ -1,93 +1,168 @@
 # MCFClassSolver
 
+This project implements `MCFSolver`, a SMS++ `:Solver` for
+[MCFBlock](https://gitlab.com/smspp/mcfblock) based on forwarding the interface
+of (objects derived from the general abstract) [MCFClass of the MCFClass
+project](http://www.di.unipi.it/optimize/Software/MCF.html). `MCFSolver` is
+template over the underlying `:MCFClass` object, so the same source produces a
+solver for any of the min-cost flow algorithms provided by MCFClass, such as
+`MCFSimplex`, `RelaxIV` and `MCFCplex`.
+
+Upon compiling, one `MCFSolver< :MCFClass >` variant is added to the `Solver`
+factory for each `:MCFClass` selected through the corresponding `HAVE_*` macro
+(see [MCFSolver.h](include/MCFSolver.h) for the full list); the selection is
+made in [CMakeLists.txt](CMakeLists.txt) for the CMake build and in the
+`MCFClssSlvr` macro of the [makefile](makefile) for the makefile build. The
+chosen `:MCFClass` must of course have been compiled into the MCFClass library.
 
 
 ## Getting started
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+These instructions will let you build `MCFClassSolver` on your system.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
 
-## Add your files
+### Requirements
 
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+- The [SMS++ core library](https://gitlab.com/smspp/smspp) and its
+  requirements.
 
+- The [MCFBlock](https://gitlab.com/smspp/mcfblock) module.
+
+- [MCFClass](https://github.com/frangio68/Min-Cost-Flow-Class) and its
+  requirements (depending on the actual `:MCFClass` solvers built). It is
+  provided here as a submodule.
+
+
+### Build and install with CMake
+
+Configure and build the library with:
+
+```sh
+mkdir build
+cd build
+cmake ..
+cmake --build .
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/smspp/mcfclasssolver.git
-git branch -M main
-git push -uf origin main
+
+The library has the same configuration options of
+[SMS++](https://gitlab.com/smspp/smspp-project/-/wikis/Customize-the-configuration).
+
+Optionally, install the library in the system with:
+
+```sh
+cmake --install .
 ```
 
-## Integrate with your tools
 
-* [Set up project integrations](https://gitlab.com/smspp/mcfclasssolver/-/settings/integrations)
+### Usage with CMake
 
-## Collaborate with your team
+After the library is built, you can use it in your CMake project with:
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+```cmake
+find_package(MCFClassSolver)
+target_link_libraries(<my_target> SMS++::MCFClassSolver)
+```
 
-## Test and Deploy
 
-Use the built-in continuous integration in GitLab.
+### Running the tests with CMake
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+A unit test will be built with the library. To disable it, set the option
+`BUILD_TESTING` to `OFF`.
 
-***
+The test takes an instance of a MCF in DIMACS or NC4 format. The MCF problem
+is then repeatedly solved with several changes in costs/capacities/deficits,
+arcs openings/closures and arcs additions/deletions. The same operations are
+performed on the two solvers, and the results are compared.
 
-# Editing this README
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+### Build and install with makefiles
 
-## Suggestions for a good README
+Carefully hand-crafted makefiles have also been developed for those unwilling
+to use CMake. Makefiles build the executable in-source (in the same directory
+tree where the code is) as opposed to out-of-source (in the copy of the
+directory tree constructed in the build/ folder) and therefore it is more
+convenient when having to recompile often, such as when developing/debugging
+a new module, as opposed to the compile-and-forget usage envisioned by CMake.
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+Each executable using `MCFClassSolver` has to include a "main makefile" of the
+module, which typically is either [makefile-c](makefile-c) including all
+necessary libraries comprised the "core SMS++" one, or
+[makefile-s](makefile-s) including all necessary libraries but not the "core
+SMS++" one (for the common case in which this is used together with other
+modules that already include them). One relevant case is the
+[tester comparing MCFBlock + MCFSolver with direct usage of the
+original :MCFClass solver](test/test.cpp) alluded to in the previous section.
+The makefiles in turn recursively include all the required other makefiles,
+hence one should only need to edit the "main makefile" for compilation type
+(C++ compiler and its options) and it all should be good to go. In case some
+of the external libraries are not at their default location, it should only be
+necessary to create the `../extlib/makefile-paths` out of the
+`extlib/makefile-default-paths-*` for your OS `*` and edit the relevant bits
+(commenting out all the rest).
 
-## Name
-Choose a self-explaining name for your project.
+Check the [SMS++ installation wiki](https://gitlab.com/smspp/smspp-project/-/wikis/Customize-the-configuration#location-of-required-libraries)
+for further details.
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+Note that the [MCFClass
+project](https://github.com/frangio68/Min-Cost-Flow-Class) has a similar
+arrangement with its own extlib/ folder, but due to some magic it is not
+necessary to independently edit it in an analogous way.
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+## Tests
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+The [test](test) folder contains a tester that reads an instance of a MCF
+from a file (in either DIMACS or netCDF format) in an `MCFBlock`, and from
+there in an object of a class MCFC derived from `MCFClass`, as decided by
+the macro `WHICH_MCF`. Then, a `MCFSolver< MCFC >` is attached to the
+`MCFBlock`. The MCF problem is then repeatedly solved with several changes in
+costs / capacities / deficits, arcs openings / closures and arcs additions /
+deletions. The same operations are performed on the two solvers, and the
+results are compared. This mostly tests `MCFBlock` and `MCFSolver`, since
+the actual `MCFClass` solved is the same, and so it can easily be wrong in
+the same way for both the objects. The `batch` file tests basically only one
+instance but in many different configurations (there can actually be two
+`MCFBlock`, one of which is modified and the other solved, in all possible
+combinations) and repeatedly, while the `batch-l` tests only the simplest
+case but on several different problems taken from the `data` folder of the
+[MCFBlock](https://gitlab.com/smspp/mcfblock) module, generated there by its
+`dmx2nc4` tool.
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+## Getting help
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+If you need support, you want to submit bugs or propose a new feature, you can
+[open a new issue](https://gitlab.com/smspp/mcfclasssolver/-/issues/new).
+
 
 ## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of
+conduct, and the process for submitting merge requests to us.
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+## Authors
+
+### Current Lead Authors
+
+- **Antonio Frangioni**  
+  Dipartimento di Informatica  
+  Università di Pisa
+
 
 ## License
-For open source projects, say how it is licensed.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+This code is provided free of charge under the [GNU Lesser General Public
+License version 3.0](https://opensource.org/licenses/lgpl-3.0.html) -
+see the [LICENSE](LICENSE) file for details.
+
+
+## Disclaimer
+
+The code is currently provided free of charge under an open-source license.
+As such, it is provided "*as is*", without any explicit or implicit warranty
+that it will properly behave or it will suit your needs. The Authors of
+the code cannot be considered liable, either directly or indirectly, for
+any damage or loss that anybody could suffer for having used it. More
+details about the non-warranty attached to this code are available in the
+license description file.
