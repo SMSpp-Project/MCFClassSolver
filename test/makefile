@@ -75,7 +75,7 @@ MOBJ =  $(MCFCSOBJ)
 MLIB =  $(MCFCSLIB)
 
 $(DIR)/$(NAME): $(MOBJ) $(DIR)/test.o
-	$(CC) -o $(DIR)/$(NAME) $^ $(MLIB) $(SW)
+	$(CC) -o $(DIR)/$(NAME) $(DIR)/test.o $(MOBJ) $(MLIB) $(SW)
 
 # dependencies: every .o from its .cpp + every recursively included .h- - - -
 

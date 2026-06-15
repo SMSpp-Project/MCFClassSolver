@@ -54,7 +54,7 @@ include $(MCFCSSDR)/makefile
 # append other *INC to MCFCSINC, *OBJ to MCFCSOBJ, and *H to MCFCSH as
 # defined by the makefile, thus the := assignment has to be used
 
-MCFCSOBJ := $(SMS++OBJ) $(MCFCSOBJ) $(MCFBkOBJ) $(libMCFClOBJ)
+MCFCSOBJ := $(MCFCSOBJ) $(MCFBkOBJ) $(libMCFClOBJ) $(SMS++OBJ)
 MCFCSINC := $(SMS++INC) $(MCFBkINC) $(libMCFClINC) $(MCFCSINC)
 MCFCSLIB := $(MCFCSLIB) $(MCFBkLIB) $(libMCFClLIB) $(SMS++LIB)
 
