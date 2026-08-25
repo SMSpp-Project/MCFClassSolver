@@ -472,6 +472,53 @@ public:
   }
 
 /*--------------------------------------------------------------------------*/
+ /// returns the current solution as a MCFSolution, out of the Solver's data
+ /** Returns the current solution as a MCFSolution [see MCFBlock.h], built
+  * out of the data structures of the MCFClass rather than by writing it in
+  * the Variable and the Constraint of the MCFBlock and having it read back
+  * from there: no abstract representation is therefore required to exist,
+  * and the MCFBlock is not written into at all, hence it is not lock()-ed
+  * and any number of Solver attached to it can produce their own Solution at
+  * the same time.
+  *
+  * Which parts of the solution are saved, i.e., the flows, the potentials or
+  * both, is not decided here: the MCFBlock is asked for an empty MCFSolution
+  * with the very same Configuration it would be asked for the full one, and
+  * the shape of what it returns is what says it [see
+  * MCFBlock::get_Solution()].
+  *
+  * nullptr is returned if no solution is available; a direction, which this
+  * Solver does not produce anyway [see get_var_direction()], is not looked
+  * for. */
+
+ [[nodiscard]] Solution * get_Solution( Configuration * solc = nullptr )
+  override
+ {
+  if( ! f_Block )
+   return( nullptr );
+
+  if( ! this->has_var_solution() )  // there is no solution to give
+   return( nullptr );
+
+  auto MCFB = static_cast< MCFBlock * >( f_Block );
+  auto sol = static_cast< MCFSolution * >( MCFB->get_Solution( solc , true ) );
+
+  if( ! sol->get_x().empty() ) {
+   MCFBlock::Vec_FNumber X( MCFB->get_NArcs() );
+   this->MCFGetX( X.data() );
+   sol->set_x( std::move( X ) );
+   }
+
+  if( ! sol->get_pi().empty() ) {
+   MCFBlock::Vec_CNumber Pi( MCFB->get_NNodes() );
+   this->MCFGetPi( Pi.data() );
+   sol->set_pi( std::move( Pi ) );
+   }
+
+  return( sol );
+  }
+
+/*--------------------------------------------------------------------------*/
 
  bool new_var_solution( void ) override { return( this->HaveNewX() ); }
 
