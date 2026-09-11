@@ -519,6 +519,12 @@ public:
   }
 
 /*--------------------------------------------------------------------------*/
+ /// the Solution is filled from the data of the MCFClass, not from the Variable
+
+ [[nodiscard]] bool is_get_Solution_physical( void ) const override {
+  return( true );
+  }
+
 
  bool new_var_solution( void ) override { return( this->HaveNewX() ); }
 
