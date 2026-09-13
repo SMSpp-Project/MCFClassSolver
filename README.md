@@ -21,6 +21,14 @@ chosen `:MCFClass` must of course have been compiled into the MCFClass library.
 These instructions will let you build `MCFClassSolver` on your system.
 
 
+The module also comes ready-made: `sudo apt install libsmspp-mcfclass-dev` from
+the [PPA of the project](https://launchpad.net/~smspp/+archive/ubuntu/ppa), and
+`vcpkg install "smspp[core,mcfclass]"` from the [SMS++ vcpkg
+registry](https://gitlab.com/smspp/vcpkg-registry); `conda install -c
+conda-forge smspp-project` and `brew install smspp`, from the [tap of the
+project](https://github.com/SMSpp-Project/homebrew-smspp), carry the whole
+framework. What follows is about building it yourself.
+
 ### Requirements
 
 - The [SMS++ core library](https://gitlab.com/smspp/smspp) and its
