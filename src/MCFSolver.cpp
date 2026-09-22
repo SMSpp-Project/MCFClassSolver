@@ -508,7 +508,7 @@ const std::string & MCFSolver< MCFCplex >::dbl_par_idx2str( idx_type idx )
 template<>
 int MCFSolver< SPTree >::Solver_2_MCFClass_int( idx_type par ) const
 {
- static const std::array< int , 5 > Solver_2_MCFClass_int = {
+ static const std::array< int , 5 > _val = {
   MCFClass::kMaxIter,        // intMaxIter
   -1,                        // intMaxSol
   -1,                        // intLogVerb

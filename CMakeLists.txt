@@ -76,7 +76,7 @@ if (MCFClass_USE_CPLEX)
     add_compile_definitions(HAVE_CPLEX)
 endif ()
 add_compile_definitions(HAVE_MFSMX)
-#add_compile_definitions(HAVE_SPTRE)
+add_compile_definitions(HAVE_SPTRE)
 
 # ----- Configuration header ------------------------------------------------ #
 # This will generate a *Config.h header in the build directory.
