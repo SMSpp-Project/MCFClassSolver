@@ -20,8 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - the certificate itself in two of the solvers of the MCFClass submodule:
   `MCFSimplex` keeps the cycle of the pivot whose step is infinite, while
-  `SPTree`, which used to cycle for ever on a directed cycle of negative
-  cost, stops on it and reads it off its predecessor function
+  `SPTree` reads it off its predecessor function
 
 ### Changed
 
@@ -36,6 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   since there is no `boost::any` left in the core
 
 ### Fixed
+
+- `SPTree` of the MCFClass submodule cycled for ever on a directed cycle of
+  negative cost, which is what makes the instance unbounded: it stops on it
+  and gives it as the certificate
 
 - `RelaxIV` of the MCFClass submodule raised its finite stand-in for an
   infinite capacity only at `LoadNet()`, so a later `ChgDfcts()` asking for
