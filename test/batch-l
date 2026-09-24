@@ -5,10 +5,15 @@
 
 MCFClassSolver_test=${1:-./MCFClassSolver_test}
 
+# in CI one seed of the three is run: the other two are the same sweep with
+# another random stream, and the whole of it takes 41 minutes on a machine of
+# ours, which a shared runner does not have to give a single test
+if [ -n "$CI" ]; then seeds=1; else seeds=3; fi
+
 #for mode in 0 1 2 12 13 14 20 29 30
 for mode in 16; do
   for type in net goto; do
-    for (( seed = 0 ; seed < 3 ; seed++ )); do
+    for (( seed = 0 ; seed < seeds ; seed++ )); do
 
       #for sz in 8_8 8_32 10_8 10_64 12_8 14_8
       for sz in 8_8 8_32 10_8 10_64 12_8; do

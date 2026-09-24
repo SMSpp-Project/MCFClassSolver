@@ -24,6 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `batch-l` runs one seed of its three when `$CI` is set: the three are the
+  same sweep with another random stream, while the whole of it takes 41
+  minutes on a machine of ours, which is more than a shared runner has to
+  give a single test
+
 - whoever links the module keeps it: the classes of a module register
   themselves in the factory from a static initialiser, and a linker that
   drops what looks unused takes the registration away with it, so the target
