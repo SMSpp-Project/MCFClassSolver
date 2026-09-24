@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `MCFSolver::get_var_direction()`, which threw "not implemented yet": it
+  writes one unit of flow along the cycle of negative cost and infinite
+  capacity that the :MCFClass gives as the certificate of unboundedness [see
+  `MCFClass::MCFGetUnbCycl()`] and tells the MCFBlock that its flow Variable
+  hold a direction; `get_Solution()` on an unbounded instance gives a
+  `MCFSolution` that says it holds a direction rather than the flow of a
+  solution that there is not. A :MCFClass that gives no certificate, which
+  the base class allows, makes the former throw and the latter give nothing
+
+- the certificate itself in two of the solvers of the MCFClass submodule:
+  `MCFSimplex` keeps the cycle of the pivot whose step is infinite, while
+  `SPTree`, which used to cycle for ever on a directed cycle of negative
+  cost, stops on it and reads it off its predecessor function
+
 ### Changed
 
 - whoever links the module keeps it: the classes of a module register
@@ -22,6 +36,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   since there is no `boost::any` left in the core
 
 ### Fixed
+
+- `RelaxIV` of the MCFClass submodule raised its finite stand-in for an
+  infinite capacity only at `LoadNet()`, so a later `ChgDfcts()` asking for
+  more flow than that could make it declare a feasible instance unfeasible,
+  and `ChgDfcts()` on a range of nodes wrote the node before the range
+
+- `SPTree::MCFArcs()` of the same submodule gave the arcs of the graph
+  mismatched with their names, reading the dictionary of the Forward Star
+  the wrong way round
 
 ## [0.2.0] - 2026-09-12
 

@@ -503,9 +503,23 @@ public:
   auto MCFB = static_cast< MCFBlock * >( f_Block );
   auto sol = static_cast< MCFSolution * >( MCFB->get_Solution( solc , true ) );
 
+  // an unbounded instance has a direction to give rather than a solution,
+  // and the Solution says which of the two it holds [see unb_cycle()]
+  const bool unb =
+   this->MCFC::MCFGetStatus() == MCFClass::kUnbounded;
+
   if( ! sol->get_x().empty() ) {
-   MCFBlock::Vec_FNumber X( MCFB->get_NArcs() );
-   this->MCFGetX( X.data() );
+   MCFBlock::Vec_FNumber X( MCFB->get_NArcs() , 0 );
+   if( unb ) {
+    if( ! unb_cycle( X ) ) {  // no certificate: nothing to give
+     delete sol;
+     return( nullptr );
+     }
+    sol->is_direction( true );
+    }
+   else
+    this->MCFGetX( X.data() );
+
    sol->set_x( std::move( X ) );
    }
 
@@ -556,19 +570,29 @@ public:
   * since the Configuration is meant to say "only save/map the dual
   * information". In all other cases, the direction (cycle) is saved.
   *
-  * Or, rather, THIS SHOULD BE DONE, BUT THE METHOD IS NOT IMPLEMENTED yet. */
+  * The direction is one unit of flow along the cycle the :MCFClass gives as
+  * the certificate of unboundedness [see MCFClass::MCFGetUnbCycl()], and the
+  * MCFBlock is told that what its flow Variable hold is a direction rather
+  * than a solution [see MCFBlock::is_direction()]. Not every :MCFClass
+  * produces the cycle; the ones that do not make this method throw. */
 
  void get_var_direction( Configuration * dirc = nullptr ) override
  {
+  if( ! f_Block )  // no [MCF]Block to write to
+   return;         // cowardly and silently return
+
   auto tsolc = dynamic_cast< SimpleConfiguration< int > * >( dirc );
   if( tsolc && ( tsolc->f_value == 2 ) )
    return;
 
-  throw( std::logic_error(
-		    "MCFSolver::get_var_direction() not implemented yet" ) );
+  auto MCFB = static_cast< MCFBlock * >( f_Block );
+  MCFBlock::Vec_FNumber X( MCFB->get_NArcs() , 0 );
+  if( ! unb_cycle( X ) )
+   throw( std::logic_error( "MCFSolver::get_var_direction: this :MCFClass "
+			    "gives no certificate of unboundedness" ) );
 
-  // TODO: implement using MCFC::MCFGetUnbCycl()
-  // anyway, unsure if any current :MCFClass properly implemente the latter
+  MCFB->is_direction( true );  // what the Variable hold is a direction
+  MCFB->set_x( X.begin() );
   }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
@@ -867,6 +891,33 @@ protected:
  void process_outstanding_Modification( void );
 
  void guts_of_poM( c_p_Mod mod );
+
+/*--------------------------------------------------------------------------*/
+ /// one unit of flow along the cycle that proves the instance unbounded
+ /** Writes in X one unit of flow along the directed cycle of negative cost
+  * and infinite capacity that the :MCFClass gives as the certificate of
+  * unboundedness, which is a direction of the MCFBlock [see
+  * MCFBlock::is_direction()], and returns true; returns false, leaving X
+  * alone, if the :MCFClass does not give the cycle, which not all of them
+  * do [see MCFClass::MCFGetUnbCycl()]. */
+
+ bool unb_cycle( MCFBlock::Vec_FNumber & X ) {
+  auto MCFB = static_cast< MCFBlock * >( f_Block );
+  MCFBlock::Subset Pred( MCFB->get_NNodes() + 1 );
+  MCFBlock::Subset ArcPred( MCFB->get_NNodes() + 1 );
+
+  auto strt = this->MCFC::MCFGetUnbCycl( Pred.data() , ArcPred.data() );
+  if( strt == Inf< MCFBlock::Index >() )
+   return( false );
+
+  for( auto nd = strt ; ; ) {
+   X[ ArcPred[ nd ] ] = 1;
+   if( ( nd = Pred[ nd ] ) == strt )
+    break;
+   }
+
+  return( true );
+  }
 
 /*--------------------------------------------------------------------------*/
 
