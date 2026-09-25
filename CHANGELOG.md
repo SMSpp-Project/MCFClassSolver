@@ -25,8 +25,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - the certificate itself in two of the solvers of the MCFClass submodule:
   `MCFSimplex` keeps the cycle of the pivot whose step is infinite, while
   `SPTree` reads it off its predecessor function
-  `SPTree`, which used to cycle for ever on a directed cycle of negative
-  cost, stops on it and reads it off its predecessor function
 
 ### Changed
 
