@@ -45,6 +45,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `MCFSolver<SPTree>` found a directed cycle of negative cost only if the
+  queue of SPTree is a FIFO one: a node scanned more than n times is the
+  hint of a cycle, but with any other queue the predecessors need not close
+  one then; a label below the sum of the n - 1 most negative arc costs, the
+  cost of the most negative simple path, now proves one whatever the queue,
+  the count of the scans staying as the early hint
+
 - `MCFSolver<MCFSimplex>` with `kReopt` could give a flow outside the
   bounds after a change of the capacities or of the deficits: the primal
   simplex of MCFClass, balancing the tree before re-optimizing, followed the
