@@ -45,6 +45,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `MCFSolver<SPTree>` with a label-setting queue (Dijkstra or the heap, the
+  default) stopped at the destinations also when there are negative costs,
+  whose labels are not final then, giving wrong ones and missing negative
+  cycles; with negative costs it now goes on until the queue is empty, as a
+  label-correcting algorithm does, and stops as before otherwise
+
 - `MCFSolver<SPTree>` found a directed cycle of negative cost only if the
   queue of SPTree is a FIFO one: a node scanned more than n times is the
   hint of a cycle, but with any other queue the predecessors need not close
