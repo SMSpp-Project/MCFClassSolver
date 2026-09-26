@@ -45,6 +45,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `MCFSolver<MCFSimplex>` with `kReopt` could give a flow outside the
+  bounds after a change of the capacities or of the deficits: the primal
+  simplex of MCFClass, balancing the tree before re-optimizing, followed the
+  thread while moving subtrees under its dummy root, and skipped the nodes
+  the move took away; MCFClass now collects the sons of a node first, and on
+  5 instances times 5 seeds of 40 rounds of changes the runs that failed go
+  from up to 11 in 25 to none
+
 - on macOS a program linking the module lost the classes the module
   registers in the factories when the linker dropped the library, as it
   does under `-dead_strip_dylibs`, which conda sets: the target now asks the
