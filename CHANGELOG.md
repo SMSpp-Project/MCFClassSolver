@@ -45,6 +45,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `MCFSolver<MCFSimplex>` re-optimizing balanced the flow of the whole tree
+  at each change of a single capacity or deficit and at each closed arc,
+  rather than once before the next solve: after closing 1% of the arcs of
+  an instance with 2^12 nodes, re-optimizing took about 8 times the
+  instructions of a solve from scratch, and it now takes about 0.6 times
+
+- `MCFSolver<MCFSimplex>` with the Dual Simplex re-optimizing after a change
+  of the costs put the arcs out of the tree at the bound that their reduced
+  cost under the potentials of before the change says, the potentials not
+  being recomputed; and switching from the Primal to the Dual Simplex (or
+  back) with an instance loaded deleted the modified balances that both use
+
+- `MCFSolver<MCFCplex>` ignored `kReopt`, the network simplex of CPLEX
+  starting from the basis of the last solve in any case: with `kReopt` off
+  it now starts from the initial basis
+
 - `MCFSolver<SPTree>` with a label-setting queue (Dijkstra or the heap, the
   default) stopped at the destinations also when there are negative costs,
   whose labels are not final then, giving wrong ones and missing negative
