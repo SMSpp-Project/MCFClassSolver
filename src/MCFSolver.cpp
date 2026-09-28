@@ -227,7 +227,7 @@ Solver::idx_type MCFSolver< MCFSimplex >::int_par_str2idx(
  if( name == "kHotListSize" )
   return( intLastParCDAS + 4 );
 
- return( CDASolver::dbl_par_str2idx( name ) );
+ return( CDASolver::int_par_str2idx( name ) );
  }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -353,7 +353,7 @@ Solver::idx_type MCFSolver< RelaxIV >::int_par_str2idx(
  if( name == "kAuction" )
   return( intLastParCDAS + 1 );
 
- return( CDASolver::dbl_par_str2idx( name ) );
+ return( CDASolver::int_par_str2idx( name ) );
  }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -468,7 +468,7 @@ Solver::idx_type MCFSolver< MCFCplex >::int_par_str2idx(
  if( name == "kQPMethod" )
   return( kQPMethod + 1 );
 
- return( CDASolver::dbl_par_str2idx( name ) );
+ return( CDASolver::int_par_str2idx( name ) );
  }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -577,7 +577,7 @@ Solver::idx_type MCFSolver< SPTree >::int_par_str2idx(
  if( name == "kReopt" )
   return( intLastParCDAS );
 
- return( CDASolver::dbl_par_str2idx( name ) );
+ return( CDASolver::int_par_str2idx( name ) );
  }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

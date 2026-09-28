@@ -57,6 +57,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   being recomputed; and switching from the Primal to the Dual Simplex (or
   back) with an instance loaded deleted the modified balances that both use
 
+- `MCFSimplex::ChgDfcts()` (MCFClass) bounded the range of the nodes by the
+  number of arcs, and hence with the default range it wrote past the vector
+  of the nodes (a caller of `MCFSolver` is not affected, since it always
+  passes the range)
+
+- `MCFSolver<*>::int_par_str2idx()` looked a name that is not a parameter of
+  the :MCFClass up among the double parameters of the `CDASolver`, so that
+  an int parameter such as `intMaxIter` given by name in a `ComputeConfig`
+  was not found
+
 - `MCFSolver<MCFCplex>` ignored `kReopt`, the network simplex of CPLEX
   starting from the basis of the last solve in any case: with `kReopt` off
   it now starts from the initial basis
