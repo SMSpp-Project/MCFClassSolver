@@ -9,11 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `SPTree` of the MCFClass submodule has the parameter `kNegCycl`, with
-  which a caller that knows that the costs give no cycle of negative cost
-  (`kNoNegCycl`), or that no cost is negative (`kNoNegCst`), spares the
-  computation of the bound of the check of a negative cycle, which the
-  default `kMayNegCycl` makes again after each change of the costs
+- `SPTree` of the MCFClass submodule has the parameter `kNegCycl`, which
+  `MCFSolver< SPTree >` gives as its own: with the default `kNoNegCst` the
+  costs are taken as nonnegative, with `kNoNegCycl` as giving no cycle of
+  negative cost, and in both cases the bound of the check of a negative
+  cycle is not computed; `kMayNegCycl` computes it again after each change
+  of the costs, and it is the value to give when a negative cycle has to be
+  found and reported as unbounded
 
 - `dblRelAcc` and `dblFAccSol` of `MCFSolver` are relative tolerances: if
   positive, `compute()` sets `kEpsCst` to `dblRelAcc` times the largest
@@ -61,6 +63,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   since there is no `boost::any` left in the core
 
 ### Fixed
+
+- the tables that map the parameters of `MCFSolver< SPTree >` to those of
+  `SPTree` lacked `intMaxThread`, `intEverykIt` and `dblEveryTTm`, so that
+  the parameters after them went to the wrong `SPTree` parameter (e.g.,
+  `dblAbsAcc` to none and `kReopt` read past the end of the table)
 
 - `MCFSolver<MCFSimplex>` re-optimizing balanced the flow of the whole tree
   at each change of a single capacity or deficit and at each closed arc,

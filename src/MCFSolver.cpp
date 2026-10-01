@@ -500,6 +500,14 @@ const std::string & MCFSolver< MCFCplex >::dbl_par_idx2str( idx_type idx )
 
 /*--------------------------------------------------------------------------*/
 /* Managing parameters for SPTree ------------------------------------------*/
+/*
+ * SPTree has the extra "int" parameter
+ *
+ * - kNegCycl       what the costs may give: no negative cost (kNoNegCst,
+ *                  the default), negative costs but no negative cycle
+ *                  (kNoNegCycl), or possibly a negative cycle (kMayNegCycl),
+ *                  the only value with which a negative cycle is found and
+ *                  reported as kUnbounded [see SPTree::SetPar()] */
 
 #ifdef HAVE_SPTRE
 
@@ -508,12 +516,15 @@ const std::string & MCFSolver< MCFCplex >::dbl_par_idx2str( idx_type idx )
 template<>
 int MCFSolver< SPTree >::Solver_2_MCFClass_int( idx_type par ) const
 {
- static const std::array< int , 5 > _val = {
-  MCFClass::kMaxIter,        // intMaxIter
-  -1,                        // intMaxSol
-  -1,                        // intLogVerb
-  -1,                        // intMaxDSol
-  MCFClass::kReopt,          // intLastParCDAS
+ static const std::array< int , 8 > _val = {
+  MCFClass::kMaxIter ,        // intMaxIter
+  -1 ,                        // intMaxThread
+  -1 ,                        // intEverykIt
+  -1 ,                        // intMaxSol
+  -1 ,                        // intLogVerb
+  -1 ,                        // intMaxDSol
+  MCFClass::kReopt ,          // intLastParCDAS
+  SPTree::kNegCycl            // intLastParCDAS + 1
   };
 
  return( _val[ par ] );
@@ -524,8 +535,9 @@ int MCFSolver< SPTree >::Solver_2_MCFClass_int( idx_type par ) const
 template<>
 int MCFSolver< SPTree >::Solver_2_MCFClass_dbl( idx_type par ) const
 {
- static const std::array< int , 11 > _val = {
+ static const std::array< int , 12 > _val = {
   MCFClass::kMaxTime,        // dblMaxTime
+  -1,                        // dblEveryTTm
   -1,                        // dblRelAcc
   MCFClass::kEpsFlw,         // dblAbsAcc
   -1,                        // dblUpCutOff
@@ -545,7 +557,7 @@ int MCFSolver< SPTree >::Solver_2_MCFClass_dbl( idx_type par ) const
 
 template<>
 Solver::idx_type MCFSolver< SPTree >::get_num_int_par( void ) const {
- return( CDASolver::get_num_int_par() + 1 );
+ return( CDASolver::get_num_int_par() + 2 );
  }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -557,7 +569,8 @@ Solver::idx_type MCFSolver< SPTree >::get_num_dbl_par( void ) const { }
 
 template<>
 int MCFSolver< SPTree >::get_dflt_int_par( idx_type par ) const {
- static const std::array< int , 1 > my_dflt_int_par = { MCFClass::kYes };
+ static const std::array< int , 2 > my_dflt_int_par = { MCFClass::kYes ,
+                                                         SPTree::kNoNegCst };
 
  return( par >= intLastParCDAS ?
          my_dflt_int_par[ par - intLastParCDAS ] :
@@ -576,6 +589,8 @@ Solver::idx_type MCFSolver< SPTree >::int_par_str2idx(
 					  const std::string & name ) const {
  if( name == "kReopt" )
   return( intLastParCDAS );
+ if( name == "kNegCycl" )
+  return( intLastParCDAS + 1 );
 
  return( CDASolver::int_par_str2idx( name ) );
  }
@@ -591,7 +606,8 @@ Solver::idx_type MCFSolver< SPTree >::dbl_par_str2idx(
 template<>
 const std::string & MCFSolver< SPTree >::int_par_idx2str( idx_type idx )
  const {
- static const std::array< std::string , 1 > my_int_pars_str = { "kReopt" };
+ static const std::array< std::string , 2 > my_int_pars_str = { "kReopt" ,
+                                                                 "kNegCycl" };
 
  return( idx >= intLastParCDAS ?
          my_int_pars_str[ idx - intLastParCDAS ] :
