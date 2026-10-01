@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `SPTree` of the MCFClass submodule has the parameter `kNegCycl`, with
+  which a caller that knows that the costs give no cycle of negative cost
+  (`kNoNegCycl`), or that no cost is negative (`kNoNegCst`), spares the
+  computation of the bound of the check of a negative cycle, which the
+  default `kMayNegCycl` makes again after each change of the costs
+
 - `dblRelAcc` and `dblFAccSol` of `MCFSolver` are relative tolerances: if
   positive, `compute()` sets `kEpsCst` to `dblRelAcc` times the largest
   absolute value of a cost, and `kEpsFlw` to `dblFAccSol` times the largest
