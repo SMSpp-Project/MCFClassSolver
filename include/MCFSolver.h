@@ -244,6 +244,21 @@ public:
  * Solver_2_MCFClass_dbl, with a negative entry meaning "there is no such
  * parameter in MCFSolver".
  *
+ * The tolerances of MCFClass are absolute, while how large they have to be
+ * depends on the magnitude of the data: a reduced cost that is zero up to
+ * the rounding of potentials of the order of the largest cost may be taken
+ * for a negative one, and the algorithm may then pivot for ever. Hence,
+ * dblRelAcc and dblFAccSol, if positive, are relative tolerances, which
+ * compute() turns into absolute ones on the data of the current instance:
+ * kEpsCst is dblRelAcc times the largest absolute value of a cost, and
+ * kEpsFlw is dblFAccSol times the largest one among the finite capacities
+ * and the absolute values of the deficits (1 when there is none), which
+ * MCFClass scales by the number of nodes into kEpsDfct. They are computed
+ * again only after a change of the data, and
+ * they take the place of any absolute value given to kEpsCst (dblAAccDSol)
+ * and kEpsFlw (dblAbsAcc). By default (0) they are not used, and the
+ * tolerances are the absolute ones of MCFClass.
+ *
  *  @{ */
 
  /// set the (pointer to the) Block that the Solver has to solve
@@ -266,6 +281,7 @@ public:
     throw( std::logic_error( "cannot acquire read_lock on MCFBlock" ) );
 
    // load the new MCFBlock into the :MCFClass object
+   f_eps_stale = true;  // [see scale_eps()]
    MCFC::LoadNet( MCFB->get_MaxNNodes() , MCFB->get_MaxNArcs() ,
 		  MCFB->get_NNodes() , MCFB->get_NArcs() ,
 		  MCFB->get_U().empty() ? nullptr : MCFB->get_U().data() ,
@@ -306,6 +322,16 @@ public:
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
  void set_par( idx_type par , double value ) override {
+  if( par == dblRelAcc ) {  // a relative tolerance of the costs
+   f_rel_cst = value;
+   f_eps_stale = true;
+   return;
+   }
+  if( par == dblFAccSol ) {  // a relative tolerance of flows and deficits
+   f_rel_flw = value;
+   f_eps_stale = true;
+   return;
+   }
   auto idx = Solver_2_MCFClass_dbl( par );
   if( idx >= 0 )
    MCFC::SetPar( idx , double( value ) );
@@ -343,6 +369,9 @@ public:
   
   // while [read_]locked, process any outstanding Modification
   process_outstanding_Modification();
+
+  // and give MCFClass the tolerances of the data of now
+  scale_eps();
 
   if( ! f_dmx_file.empty() ) {  // if so required
    // output the current instance (after the changes) to a DMX file
@@ -694,6 +723,8 @@ public:
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
  
  [[nodiscard]] double get_dflt_dbl_par( idx_type par ) const override {
+  if( ( par == dblRelAcc ) || ( par == dblFAccSol ) )
+   return( 0 );  // no relative tolerance [see scale_eps()]
   return( CDASolver::get_dflt_dbl_par( par ) );
   }
 
@@ -724,6 +755,10 @@ public:
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
  
  [[nodiscard]] double get_dbl_par( idx_type par ) const override {
+  if( par == dblRelAcc )
+   return( f_rel_cst );
+  if( par == dblFAccSol )
+   return( f_rel_flw );
   auto idx = Solver_2_MCFClass_dbl( par );
   if( idx >= 0 ) {
    double val;
@@ -851,6 +886,7 @@ public:
    // this is the "nuclear option": the MCFBlock has been re-loaded, so
    // the MCFClass solver also has to (immediately)
    auto MCFB = static_cast< MCFBlock * >( f_Block );
+   f_eps_stale = true;  // [see scale_eps()]
    MCFC::LoadNet( MCFB->get_MaxNNodes() , MCFB->get_MaxNArcs() ,
 		  MCFB->get_NNodes() , MCFB->get_NArcs() ,
 		  MCFB->get_U().empty() ? nullptr : MCFB->get_U().data() ,
@@ -930,6 +966,40 @@ protected:
 /*--------------------------------------------------------------------------*/
 
  std::string f_dmx_file;  // string for DMX file output
+
+ double f_rel_cst = 0;      // dblRelAcc, the relative tolerance of the costs
+ double f_rel_flw = 0;      // dblFAccSol, the one of flows and deficits
+ bool f_eps_stale = true;   // whether the data changed since scale_eps()
+
+/*--------------------------------------------------------------------------*/
+ /// gives MCFClass the absolute tolerances of the relative ones
+ /** If dblRelAcc (dblFAccSol) is positive and the data have changed since
+  * the last call, sets kEpsCst (kEpsFlw, hence kEpsDfct) to it times the
+  * largest absolute value of a cost (of a finite capacity or a deficit), or
+  * 1 if there is none. The f_Block must be [read_]locked. */
+
+ void scale_eps( void ) {
+  if( ( ! f_eps_stale ) || ( ( f_rel_cst <= 0 ) && ( f_rel_flw <= 0 ) ) )
+   return;
+
+  auto MCFB = static_cast< MCFBlock * >( f_Block );
+  if( f_rel_cst > 0 ) {
+   double cmax = 0;
+   for( auto c : MCFB->get_C() )
+    cmax = std::max( cmax , std::abs( double( c ) ) );
+   MCFC::SetPar( MCFClass::kEpsCst , f_rel_cst * ( cmax > 0 ? cmax : 1 ) );
+   }
+  if( f_rel_flw > 0 ) {
+   double fmax = 0;
+   for( auto u : MCFB->get_U() )
+    if( u < Inf< double >() )
+     fmax = std::max( fmax , double( u ) );
+   for( auto b : MCFB->get_B() )
+    fmax = std::max( fmax , std::abs( double( b ) ) );
+   MCFC::SetPar( MCFClass::kEpsFlw , f_rel_flw * ( fmax > 0 ? fmax : 1 ) );
+   }
+  f_eps_stale = false;
+  }
 
 /*--------------------------------------------------------------------------*/
 /*--------------------- PRIVATE PART OF THE CLASS --------------------------*/
@@ -1087,6 +1157,7 @@ template< class MCFC >
 void MCFSolver< MCFC >::guts_of_poM( c_p_Mod mod )
 {
  auto MCFB = static_cast< MCFBlock * >( f_Block );
+ f_eps_stale = true;  // the data may change [see scale_eps()]
 
  // process Modification - - - - - - - - - - - - - - - - - - - - - - - - - - -
  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

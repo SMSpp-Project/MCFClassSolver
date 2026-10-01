@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `dblRelAcc` and `dblFAccSol` of `MCFSolver` are relative tolerances: if
+  positive, `compute()` sets `kEpsCst` to `dblRelAcc` times the largest
+  absolute value of a cost, and `kEpsFlw` to `dblFAccSol` times the largest
+  among the finite capacities and the absolute deficits, computing them
+  again only after a change of the data; the default 0 leaves the absolute
+  tolerances of MCFClass
+
 - the tests of this directory carry the label of the module, so that the
   pipeline, which selects with `ctest -L <module>`, runs them: they were built
   and never run
@@ -27,6 +34,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `SPTree` reads it off its predecessor function
 
 ### Changed
+
+- `SPTree` of the MCFClass submodule computes the bound of its check of a
+  negative cycle (the sum of the n - 1 most negative costs) again only after
+  a change of the costs or of the arcs, rather than at each solve
 
 - `batch-l` runs one seed of its three when `$CI` is set: the three are the
   same sweep with another random stream, while the whole of it takes 41
