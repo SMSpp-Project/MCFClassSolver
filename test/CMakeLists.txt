@@ -44,11 +44,14 @@ endif ()
 
 # The batch-l tester runs over the larger instances produced by the dmx2nc4
 # tool of the MCFBlock module; build that target as a setup fixture so the
-# instances exist before the test runs.
+# instances exist before the test runs. The test run_dmx2nc4 of the MCFBlock
+# suite builds the same target, and the two would write the same files at
+# once under ctest -j, hence the common lock.
 add_test(NAME MCFClassSolver_run_dmx2nc4
          COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target run_dmx2nc4)
 set_tests_properties(MCFClassSolver_run_dmx2nc4
-                     PROPERTIES FIXTURES_SETUP mcfcs_dmx2nc4_generated)
+                     PROPERTIES FIXTURES_SETUP mcfcs_dmx2nc4_generated
+                                RESOURCE_LOCK MCFBlock_dmx2nc4)
 
 # Add a test for each batch file
 file(GLOB BATCH_FILES "${CMAKE_CURRENT_SOURCE_DIR}/batch"

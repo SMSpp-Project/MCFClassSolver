@@ -64,6 +64,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `MCFClassSolver_run_dmx2nc4` and the test `run_dmx2nc4` of the MCFBlock
+  suite of tests share a `RESOURCE_LOCK`: they build the same target, and
+  under `ctest -j` they ran at the same time and wrote the same instances,
+  leaving one of them empty, so that `batch-l` failed on it
+
 - the tables that map the parameters of `MCFSolver< SPTree >` to those of
   `SPTree` lacked `intMaxThread`, `intEverykIt` and `dblEveryTTm`, so that
   the parameters after them went to the wrong `SPTree` parameter (e.g.,
