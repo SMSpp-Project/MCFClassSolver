@@ -10,14 +10,11 @@
 #                             Universita' di Pisa                             #
 # --------------------------------------------------------------------------- #
 
-# Since we are using the block factory, objects from linked libraries
-# may wrongly appear unused, and by default the linker does not include them,
-# so we have to force the linking.
-if (BUILD_SHARED_LIBS)
-    if (UNIX AND (NOT APPLE))
-        add_link_options("-Wl,--no-as-needed")
-    endif ()
-else ()
+# The classes of the modules register themselves in the factories from
+# static objects, which nothing here names: a shared library is kept by
+# what its module asks of the linker [see the CMakeLists.txt of the
+# module], while an archive has to be taken whole.
+if (NOT BUILD_SHARED_LIBS)
     if (MSVC)
         add_link_options("/WHOLEARCHIVE" "/FORCE:MULTIPLE")
     else () # Unix
@@ -47,11 +44,14 @@ endif ()
 
 # The batch-l tester runs over the larger instances produced by the dmx2nc4
 # tool of the MCFBlock module; build that target as a setup fixture so the
-# instances exist before the test runs.
+# instances exist before the test runs. The test run_dmx2nc4 of the MCFBlock
+# suite builds the same target, and the two would write the same files at
+# once under ctest -j, hence the common lock.
 add_test(NAME MCFClassSolver_run_dmx2nc4
          COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target run_dmx2nc4)
 set_tests_properties(MCFClassSolver_run_dmx2nc4
-                     PROPERTIES FIXTURES_SETUP mcfcs_dmx2nc4_generated)
+                     PROPERTIES FIXTURES_SETUP mcfcs_dmx2nc4_generated
+                                RESOURCE_LOCK MCFBlock_dmx2nc4)
 
 # Add a test for each batch file
 file(GLOB BATCH_FILES "${CMAKE_CURRENT_SOURCE_DIR}/batch"
@@ -76,5 +76,16 @@ foreach (BATCH_FILE ${BATCH_FILES})
                              PROPERTIES FIXTURES_REQUIRED mcfcs_dmx2nc4_generated)
     endif ()
 endforeach ()
+
+# ----- the label of this module's tests ------------------------------------ #
+
+# The label lets the module CI select exactly the tests exercising this module
+# with `ctest -L <module>` (see tests/cmake/TestLabels.cmake in the umbrella
+# for the system-tests counterpart): without it these tests are built and
+# never run.
+get_property(_tests DIRECTORY PROPERTY TESTS)
+if (_tests)
+    set_tests_properties(${_tests} PROPERTIES LABELS "${modName}")
+endif ()
 
 # --------------------------------------------------------------------------- #
