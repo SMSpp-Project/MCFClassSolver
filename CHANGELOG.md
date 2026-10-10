@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- the test `MCFClassSolver_run_dmx2nc4` sets up the fixture
+  `dmx2nc4_generated` of the MCFBlock suite and shares its lock `mcf_data`
+
 ## [0.3.0] - 2026-10-09
 
 ### Added

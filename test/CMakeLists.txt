@@ -42,16 +42,15 @@ if (WIN32 AND BUILD_SHARED_LIBS AND NOT DEFINED ENV{CONDA_BUILD})
             COMMENT "Copying runtime DLLs next to ${modName}_test.exe")
 endif ()
 
-# The batch-l tester runs over the larger instances produced by the dmx2nc4
-# tool of the MCFBlock module; build that target as a setup fixture so the
-# instances exist before the test runs. The test run_dmx2nc4 of the MCFBlock
-# suite builds the same target, and the two would write the same files at
-# once under ctest -j, hence the common lock.
+# the netCDF instances dmx2nc4 writes out of those of data/dmx, when the tests
+# that read them are run [see the CMakeLists.txt of MCFBlock]; the lock is that
+# of the data of the module
 add_test(NAME MCFClassSolver_run_dmx2nc4
-         COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target run_dmx2nc4)
-set_tests_properties(MCFClassSolver_run_dmx2nc4
-                     PROPERTIES FIXTURES_SETUP mcfcs_dmx2nc4_generated
-                                RESOURCE_LOCK MCFBlock_dmx2nc4)
+         COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}
+                 --target run_dmx2nc4)
+set_tests_properties(MCFClassSolver_run_dmx2nc4 PROPERTIES
+                     FIXTURES_SETUP dmx2nc4_generated
+                     RESOURCE_LOCK mcf_data)
 
 # Add a test for each batch file
 file(GLOB BATCH_FILES "${CMAKE_CURRENT_SOURCE_DIR}/batch"
@@ -73,7 +72,7 @@ foreach (BATCH_FILE ${BATCH_FILES})
     # batch-l reads the larger instances produced by dmx2nc4
     if (BATCH_NAME STREQUAL "batch-l")
         set_tests_properties(${modName}_test/${BATCH_NAME}
-                             PROPERTIES FIXTURES_REQUIRED mcfcs_dmx2nc4_generated)
+                             PROPERTIES FIXTURES_REQUIRED dmx2nc4_generated)
     endif ()
 endforeach ()
 
