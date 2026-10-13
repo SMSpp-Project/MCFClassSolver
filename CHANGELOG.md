@@ -12,7 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `MCFClassSolver_tolerance_test` checks that each `MCFSolver` of
   `test/MCFBSCfg-tol.txt` says infeasible on the infeasible instances with
   fractional costs `test/data/infeas-frac-*.dmx`, with a limit on the
-  iterations so that one which pivots for ever fails instead of hanging
+  iterations so that one which pivots for ever fails instead of hanging,
+  and so does `MCFSimplex` once `test/MCFBSCfg-tol-dual.txt` turns it to
+  the dual simplex
 
 ### Changed
 
@@ -27,6 +29,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   pivoted for ever on an infeasible instance with fractional costs, e.g.,
   the MCF R3Block of a CapacitatedFacilityLocationBlock after closing
   facilities
+- `MCFSimplex` of the MCFClass submodule keeps its candidate lists when it
+  is switched between primal and dual simplex (`kAlgPrimal`) on an instance
+  already loaded: they were deleted with the structures of the old algorithm
+  and the first pivot dereferenced a null pointer
 
 ## [0.3.0] - 2026-10-09
 

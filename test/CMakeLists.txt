@@ -81,11 +81,12 @@ foreach (BATCH_FILE ${BATCH_FILES})
 endforeach ()
 
 # The infeasible instances with fractional costs of data/infeas-frac-*.dmx,
-# on which every MCFSolver of MCFBSCfg-tol.txt must say infeasible
+# on which every MCFSolver of MCFBSCfg-tol.txt must say infeasible, and
+# MCFSimplex again once MCFBSCfg-tol-dual.txt turns it to the dual simplex
 foreach (_inst infeas-frac-3 infeas-frac-4)
     add_test(NAME ${modName}_tolerance_test/${_inst}
-             COMMAND ${modName}_tolerance_test data/${_inst}.dmx
-                     MCFBSCfg-tol.txt infeasible
+             COMMAND ${modName}_tolerance_test data/${_inst}.dmx infeasible
+                     MCFBSCfg-tol.txt MCFBSCfg-tol-dual.txt
              WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endforeach ()
 

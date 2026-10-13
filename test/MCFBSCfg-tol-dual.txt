@@ -1,0 +1,33 @@
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - MCFBSCfg-tol-dual.txt - - - - - - - - - - - -
+#
+# The BlockSolverConfig that MCFClassSolver_tolerance_test applies after
+# MCFBSCfg-tol.txt and a first compute(): differential, it leaves all the
+# Solver there and turns the MCFSolver<MCFSimplex> to the dual simplex,
+# which MCFSimplex then sets up on the instance it has already loaded
+#
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+BlockSolverConfig     # exact type of the Configuration object
+
+1  # the BlockSolverConfig is a "differential" one
+
+1 # number of (the names of) Solver in this BlockSolverConfig
+
+# now all the names of the Solver - - - - - - - - - - - - - - - - - - - - - -
+*                         # the MCFSolver<MCFSimplex> already there
+
+1 # number of ComputeConfig in this BlockSolverConfig
+
+# now all the ComputeConfig
+# 1st ComputeConfig - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# ComputeConfig of MCFSolver<MCFSimplex>
+
+*MCFCfg-tol-dual.txt
+
+# end of 1st ComputeConfig - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - END MCFBSCfg-tol-dual.txt - - - - - - - - - -
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
