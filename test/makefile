@@ -10,8 +10,9 @@
 #                                                                            #
 ##############################################################################
 
-# module name
+# module name, and the tester of the tolerances
 NAME = MCFClassSolver_test
+TOLN = MCFClassSolver_tolerance_test
 
 # basic directory
 DIR = .
@@ -36,22 +37,22 @@ default: release
 # debug target- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 debug: SW = $(SW_DEBUG)
-debug: $(DIR)/$(NAME)
+debug: $(DIR)/$(NAME) $(DIR)/$(TOLN)
 
 # debug_asan target - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 debug_asan: SW = $(SW_DEBUG_ASAN)
-debug_asan: $(DIR)/$(NAME)
+debug_asan: $(DIR)/$(NAME) $(DIR)/$(TOLN)
 
 # release target- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 release: SW = $(SW_RELEASE)
-release: $(DIR)/$(NAME)
+release: $(DIR)/$(NAME) $(DIR)/$(TOLN)
 
 # clean target- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 clean::
-	rm -f $(DIR)/*.o $(DIR)/*~ $(DIR)/$(NAME)
+	rm -f $(DIR)/*.o $(DIR)/*~ $(DIR)/$(NAME) $(DIR)/$(TOLN)
 
 # define & include the necessary modules- - - - - - - - - - - - - - - - - - -
 # if a module is not used in the current configuration, just comment out the
@@ -77,6 +78,9 @@ MLIB =  $(MCFCSLIB)
 $(DIR)/$(NAME): $(MOBJ) $(DIR)/test.o
 	$(CC) -o $(DIR)/$(NAME) $(DIR)/test.o $(MOBJ) $(MLIB) $(SW)
 
+$(DIR)/$(TOLN): $(MOBJ) $(DIR)/test_tolerance.o
+	$(CC) -o $(DIR)/$(TOLN) $(DIR)/test_tolerance.o $(MOBJ) $(MLIB) $(SW)
+
 # dependencies: every .o from its .cpp + every recursively included .h- - - -
 
 # include directives
@@ -88,6 +92,9 @@ MH =    $(MCFCSH)
 # compile command
 
 $(DIR)/test.o: $(DIR)/test.cpp $(MH)
+	$(CC) -c $*.cpp -o $@ $(MINC) $(SW)
+
+$(DIR)/test_tolerance.o: $(DIR)/test_tolerance.cpp $(MH)
 	$(CC) -c $*.cpp -o $@ $(MINC) $(SW)
 
 # distclean target- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -1,0 +1,41 @@
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - MCFBSCfg-tol.txt  - - - - - - - - - - - - - - -
+#
+# The BlockSolverConfig of MCFClassSolver_tolerance_test: the MCFSolver
+# whose tolerances the instances of data/infeas-frac-*.dmx put to the test,
+# with the absolute tolerance of the reduced costs of MCFClass and a limit
+# on the iterations, so that one which pivots for ever stops and fails
+#
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+BlockSolverConfig     # exact type of the Configuration object
+
+0  # the BlockSolverConfig is not a "differential" one
+
+2 # number of (the names of) Solver in this BlockSolverConfig
+
+# now all the names of the Solver - - - - - - - - - - - - - - - - - - - - - -
+MCFSolver<MCFSimplex>     # name of Solver
+MCFSolver<RelaxIV>        # name of Solver
+
+2 # number of ComputeConfig in this BlockSolverConfig
+
+# now all the ComputeConfig
+# 1st ComputeConfig - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# ComputeConfig of MCFSolver<MCFSimplex>
+
+*MCFCfg-tol.txt
+
+# end of 1st ComputeConfig - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# 2nd ComputeConfig - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# ComputeConfig of MCFSolver<RelaxIV>
+
+*MCFCfg-tol.txt
+
+# end of 2nd ComputeConfig - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - END MCFBSCfg-tol.txt  - - - - - - - - - - - - - -
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

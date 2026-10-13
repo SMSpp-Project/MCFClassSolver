@@ -7,10 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `MCFClassSolver_tolerance_test` checks that each `MCFSolver` of
+  `test/MCFBSCfg-tol.txt` says infeasible on the infeasible instances with
+  fractional costs `test/data/infeas-frac-*.dmx`, with a limit on the
+  iterations so that one which pivots for ever fails instead of hanging
+
 ### Changed
 
 - the test `MCFClassSolver_run_dmx2nc4` sets up the fixture
   `dmx2nc4_generated` of the MCFBlock suite and shares its lock `mcf_data`
+
+### Fixed
+
+- `MCFSimplex` of the MCFClass submodule solves with a tolerance of the
+  reduced costs not below the rounding of its potentials, which are of the
+  order of the cost of its artificial arcs: with a smaller `kEpsCst` it
+  pivoted for ever on an infeasible instance with fractional costs, e.g.,
+  the MCF R3Block of a CapacitatedFacilityLocationBlock after closing
+  facilities
 
 ## [0.3.0] - 2026-10-09
 
