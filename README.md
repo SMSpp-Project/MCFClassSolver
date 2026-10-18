@@ -1,5 +1,10 @@
 # MCFClassSolver
 
+[![Pipeline](https://gitlab.com/smspp/mcfclasssolver/badges/develop/pipeline.svg)](https://gitlab.com/smspp/mcfclasssolver/-/pipelines?ref=develop)
+[![Documentation](https://img.shields.io/badge/docs-Doxygen-blue)](https://smspp.gitlab.io/smspp-project/)
+[![C++ Standard](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://en.cppreference.com/w/cpp/20)
+[![License: LGPL v3](https://img.shields.io/badge/License-LGPL_v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
+
 This project implements `MCFSolver`, a SMS++ `:Solver` for
 [MCFBlock](https://gitlab.com/smspp/mcfblock) based on forwarding the interface
 of (objects derived from the general abstract) [MCFClass of the MCFClass
