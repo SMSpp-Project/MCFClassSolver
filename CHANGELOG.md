@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   pivoted for ever on an infeasible instance with fractional costs, e.g.,
   the MCF R3Block of a CapacitatedFacilityLocationBlock after closing
   facilities
+
 - `MCFSimplex` of the MCFClass submodule keeps its candidate lists when it
   is switched between primal and dual simplex (`kAlgPrimal`) on an instance
   already loaded: they were deleted with the structures of the old algorithm
