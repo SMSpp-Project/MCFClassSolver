@@ -16,6 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and so does `MCFSimplex` once `test/MCFBSCfg-tol-dual.txt` turns it to
   the dual simplex
 
+- the C++20 module `smspp.mcfclasssolver` (`src/MCFClassSolver.cppm`), which
+  exports every name that the headers declare at namespace scope and
+  re-exports `smspp.mcfblock`, so that a source file can write `import
+  smspp.mcfclasssolver;` in place of the `#include` of the headers; it is
+  built with the CMake option `SMSpp_BUILD_MODULE`, as the target
+  `SMS++::MCFClassSolver_module`
+
 ### Changed
 
 - the test `MCFClassSolver_run_dmx2nc4` sets up the fixture
