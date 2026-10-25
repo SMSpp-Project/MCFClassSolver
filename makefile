@@ -55,6 +55,12 @@ MCFCSINC = -I$(MCFCSSDR)/include
 
 MCFCSH   = $(MCFCSSDR)/include/MCFSolver.h
 
+# the C++20 module smspp.mcfclasssolver - - - - - - - - - - - - - - - - - - -
+# [see makefile-mod of SMS++]
+
+$(eval $(call SMSppMODrule,MCFCS,$(MCFCSSDR),MCFClassSolver,\
+	smspp.mcfclasssolver,$(MCFBkMOD)))
+
 # clean - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 clean::

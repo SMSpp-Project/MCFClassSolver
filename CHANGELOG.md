@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- the makefiles build the C++20 module `smspp.mcfclasssolver` when
+  `SMSppMOD` is not empty (e.g., `make SMSppMOD=1`), with clang++ 16 or
+  later [see `lib/makefile-mod` of SMS++]
+
 - `MCFClassSolver_tolerance_test` checks that each `MCFSolver` of
   `test/MCFBSCfg-tol.txt` says infeasible on the infeasible instances with
   fractional costs `test/data/infeas-frac-*.dmx`, with a limit on the
@@ -24,6 +28,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `SMS++::MCFClassSolver_module`
 
 ### Changed
+
+- `SMSpp_BUILD_MODULE` no longer stops the configuration when the C++20
+  module cannot be built, i.e., with a CMake older than 3.28, a generator
+  other than Ninja or Visual Studio, a compiler other than Clang 16 (with
+  `clang-scan-deps`) or MSVC 19.34, or a module it imports that is not
+  there: the option is turned off with a warning that says why, and the
+  build goes on with the headers [see `cmake/CheckModule.cmake` of SMS++]
 
 - the test `MCFClassSolver_run_dmx2nc4` sets up the fixture
   `dmx2nc4_generated` of the MCFBlock suite and shares its lock `mcf_data`
