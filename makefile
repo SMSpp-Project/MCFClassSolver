@@ -43,8 +43,10 @@
 # define the set of MCFSolver< :MCFClass > that will be available by
 # uncommenting the -DHAVE_* below corresponding to the :MCFClass; see
 # MCFSolver.h for details. note that, obviously, the :MCFClass selected
-# here must have been compiled in the MCFClass library
-MCFClssSlvr = -DHAVE_MFSMX -DHAVE_CPLEX -DHAVE_RELAX -DHAVE_SPTRE
+# here must have been compiled in the MCFClass library, as MCFCplex is only
+# if CPLEX is there [see lib/makefile of MCFClass]
+MCFClssSlvr = -DHAVE_MFSMX $(if $(MCFCxOBJ),-DHAVE_CPLEX) -DHAVE_RELAX \
+	-DHAVE_SPTRE
 # -DHAVE_CSCL2 -DHAVE_MFZIB
 
 # macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -59,7 +61,7 @@ MCFCSH   = $(MCFCSSDR)/include/MCFSolver.h
 # [see makefile-mod of SMS++]
 
 $(eval $(call SMSppMODrule,MCFCS,$(MCFCSSDR),MCFClassSolver,\
-	smspp.mcfclasssolver,$(MCFBkMOD)))
+	smspp.mcfclasssolver,MCFBk))
 
 # clean - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

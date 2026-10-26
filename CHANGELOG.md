@@ -29,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- the pipeline builds the module also with its makefiles, after CMake, and
+  runs on a change of the makefiles too [see `ci/makefile` of the umbrella]
+
 - `SMSpp_BUILD_MODULE` no longer stops the configuration when the C++20
   module cannot be built, i.e., with a CMake older than 3.28, a generator
   other than Ninja or Visual Studio, a compiler other than Clang 16 (with
@@ -40,6 +43,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `dmx2nc4_generated` of the MCFBlock suite and shares its lock `mcf_data`
 
 ### Fixed
+
+- `test/makefile` compiles `test.cpp` with MCFSimplex when MCFCplex is
+  not there, as CMake does (`WHICH_MCF=2`), and so builds without CPLEX
+
+- MCFClass compiles MCFCplex with its makefiles only if CPLEX is there, so
+  that the makefiles build without CPLEX
+
+- the makefile defines `HAVE_CPLEX` only if MCFClass compiles `MCFCplex`,
+  which it does only if CPLEX is there
+
+- the makefiles of the tests and of the tools build also with g++: they
+  take the option that stops at the first error and the one of the
+  debugging information, which clang++ and g++ spell differently
+  (`-ferror-limit=1` and `-glldb` against `-fmax-errors=1` and `-ggdb`),
+  from `SMSppSWERR` and `SMSppSWDBG` of `lib/makefile-OS` of SMS++
 
 - `MCFSimplex` of the MCFClass submodule solves with a tolerance of the
   reduced costs not below the rounding of its potentials, which are of the

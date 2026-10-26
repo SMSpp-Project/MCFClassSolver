@@ -18,12 +18,15 @@ TOLN = MCFClassSolver_tolerance_test
 DIR = .
 
 # common flags
-COMMON_SW = -std=c++20 -ferror-limit=1
+COMMON_SW = -std=c++20 $(SMSppSWERR)
 
 # debug switches
-SW_DEBUG = -g -glldb -fno-inline $(COMMON_SW)
+SW_DEBUG = -g $(SMSppSWDBG) -fno-inline $(COMMON_SW)
 # debug switches with address sanitizer and extra pedantic warning
-SW_DEBUG_ASAN = -g3 -glldb -fno-inline $(COMMON_SW) -fsanitize=undefined -fsanitize=address -fno-omit-frame-pointer -Wpedantic -Wextra -Wno-unused-parameter
+SW_DEBUG_ASAN = -g3 $(SMSppSWDBG) -fno-inline $(COMMON_SW) \
+                -fsanitize=undefined -fsanitize=address \
+                -fno-omit-frame-pointer -Wpedantic -Wextra \
+                -Wno-unused-parameter
 # production switches
 SW_RELEASE = -O3 $(COMMON_SW) -DNDEBUG
 
@@ -91,8 +94,10 @@ MH =    $(MCFCSH)
 
 # compile command
 
+# the MCF solver of test.cpp is MCFCplex, or MCFSimplex if MCFCplex is not
+# there, as with CMake
 $(DIR)/test.o: $(DIR)/test.cpp $(MH)
-	$(CC) -c $*.cpp -o $@ $(MINC) $(SW)
+	$(CC) -c $*.cpp -o $@ $(MINC) $(if $(MCFCxOBJ),,-DWHICH_MCF=2) $(SW)
 
 $(DIR)/test_tolerance.o: $(DIR)/test_tolerance.cpp $(MH)
 	$(CC) -c $*.cpp -o $@ $(MINC) $(SW)
