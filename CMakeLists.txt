@@ -60,7 +60,8 @@ else ()
     # MCFClass library, required by MCFSolver.
     # Requires CPLEX.
     set(MCFClass_READ_PATHS OFF CACHE BOOL
-            "Whether MCFClass will read locations for dependencies or not." FORCE)
+            "Whether MCFClass will read locations for dependencies or not."
+            FORCE)
     add_subdirectory(MCFClass)
 
     # Add the binary directory to RPATH, so executables that use
@@ -135,6 +136,11 @@ if (BUILD_SHARED_LIBS)
         # for by -u included, even under -dead_strip_dylibs
         target_link_options(${modName} INTERFACE
                 "LINKER:-u,_SMSpp_force_load_${modName}")
+    elseif (MINGW)
+        # the PE linker imports a DLL for the symbols asked for, -u
+        # included
+        target_link_options(${modName} INTERFACE
+                "LINKER:-u,SMSpp_force_load_${modName}")
     endif ()
 endif ()
 
