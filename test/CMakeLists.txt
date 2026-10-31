@@ -43,6 +43,14 @@ foreach (_exe ${modName}_test ${modName}_tolerance_test)
                 $<TARGET_FILE_DIR:${_exe}>
                 COMMAND_EXPAND_LISTS
                 COMMENT "Copying runtime DLLs next to ${_exe}.exe")
+        # one link at a time, since two copies of the same DLL into a
+        # directory collide, and Ninja links in parallel
+        get_property(_pools GLOBAL PROPERTY JOB_POOLS)
+        if (NOT _pools MATCHES "smspp_runtime_dlls=")
+            set_property(GLOBAL APPEND PROPERTY JOB_POOLS smspp_runtime_dlls=1)
+        endif ()
+        set_property(TARGET ${_exe}
+                     PROPERTY JOB_POOL_LINK smspp_runtime_dlls)
     endif ()
 endforeach ()
 
@@ -64,7 +72,8 @@ foreach (BATCH_FILE ${BATCH_FILES})
     string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" BATCH_NAME ${BATCH_FILE})
     if (UNIX)
         add_test(NAME ${modName}_test/${BATCH_NAME}
-                 COMMAND bash ${BATCH_FILE} ${CMAKE_CURRENT_BINARY_DIR}/${modName}_test
+                 COMMAND bash ${BATCH_FILE}
+                         ${CMAKE_CURRENT_BINARY_DIR}/${modName}_test
                  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     elseif (WIN32)
         add_test(NAME ${modName}_test/${BATCH_NAME}
