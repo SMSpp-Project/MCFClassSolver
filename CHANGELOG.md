@@ -44,6 +44,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `MCFClass` at the commit whose `cmake/FindCPLEX.cmake` searches CPLEX
+  again when one of its cached paths no longer exists (e.g., in a build
+  directory configured once outside and once inside a container), rather
+  than stopping the configuration on reading the version from a header
+  that is not there
+
 - with the compilers of MinGW (MSYS2) the target asks whoever links it
   for the symbol that forces the module in, as with MSVC and on macOS:
   the linker imports a DLL only for the symbols asked for, so that a
