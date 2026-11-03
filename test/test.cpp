@@ -764,16 +764,16 @@ int main( int argc , char **argv )
      else {  // change via call to chg_* method
       // in 50% of the cases a direct call, otherwise use the methods factory
       //!! if( dis( rg ) <= 0.5 ) {
-       mMCFB->chg_costs( newcsts.begin() , Range( strt , stp ) );
+       mMCFB->chg_costs( Block::MF_dbl_sp( newcsts ) , Range( strt , stp ) );
        LOG1( "s(r) - " );
       //!!  }
       //!! else {
       //!!  std::string mthd_name = "MCFBlock::chg_costs";
       //!!  const auto * mthd = Block::get_method_fs( mthd_name ,
-      //!!                                      Block::MS_dbl_rngd::args() );
+      //!!                                    Block::MS_sp_dbl_rngd::args() );
       //!!  assert( mthd_name == Block::get_method_name_fs
-      //!!          ( mthd , Block::MS_dbl_rngd::args() ) );
-      //!!  std::invoke( *mthd , mMCFB , newcsts.begin() ,
+      //!!          ( mthd , Block::MS_sp_dbl_rngd::args() ) );
+      //!!  std::invoke( *mthd , mMCFB , Block::MF_dbl_sp( newcsts ) ,
        //!!              Range( strt , stp ) , eNoBlck , eNoBlck );
       //!!  LOG1( "s(r-mf) - " );
       //!!  }
@@ -794,16 +794,18 @@ int main( int argc , char **argv )
      else {  // change via call to chg_* method
       // in 50% of the cases a direct call, otherwise use the methods factory
       //!! if( dis( rg ) <= 0.5 ) {
-       mMCFB->chg_costs( newcsts.begin() , std::move( nms ) , true );
+       mMCFB->chg_costs( Block::MF_dbl_sp( newcsts ) , std::move( nms ) ,
+                         true );
        LOG1( "s(s) - " );
       //!! }
       //!! else {
       //!!  std::string mthd_name = "MCFBlock::chg_costs";
       //!!  const auto * mthd = Block::get_method_fs( mthd_name,
-      //!!                                      Block::MS_dbl_sbst::args() );
+      //!!                                    Block::MS_sp_dbl_sbst::args() );
       //!!  assert( mthd_name == Block::get_method_name_fs
-      //!!          ( mthd , Block::MS_dbl_sbst::args() ) );
-      //!!  std::invoke( *mthd , mMCFB , newcsts.begin() , std::move( nms ) ,
+      //!!          ( mthd , Block::MS_sp_dbl_sbst::args() ) );
+      //!!  std::invoke( *mthd , mMCFB , Block::MF_dbl_sp( newcsts ) ,
+      //!!               std::move( nms ) ,
        //!!              true , eNoBlck , eNoBlck );
       //!!  LOG1( "s(s-mf) - " );
       //!!  }
@@ -856,16 +858,16 @@ int main( int argc , char **argv )
      else {  // change via call to chg_* method
       // in 50% of the cases a direct call, otherwise use the methods factory
       //!! if( dis( rg ) <= 0.5 ) {
-       mMCFB->chg_ucaps( newcaps.begin() , Range( strt , stp ) );
+       mMCFB->chg_ucaps( Block::MF_dbl_sp( newcaps ) , Range( strt , stp ) );
        LOG1( "ies(r) - " );
       //!!  }
       //!! else {
       //!!  std::string mthd_name = "MCFBlock::chg_ucaps";
       //!!  const auto * mthd = Block::get_method_fs( mthd_name,
-      //!!                                     Block::MS_dbl_rngd::args() );
+      //!!                                     Block::MS_sp_dbl_rngd::args() );
       //!!  assert( mthd_name == Block::get_method_name_fs
-      //!!          ( mthd , Block::MS_dbl_rngd::args() ) );
-      //!!  std::invoke( *mthd , mMCFB , newcaps.begin() ,
+      //!!          ( mthd , Block::MS_sp_dbl_rngd::args() ) );
+      //!!  std::invoke( *mthd , mMCFB , Block::MF_dbl_sp( newcaps ) ,
        //!!              Range( strt , stp ) , eNoBlck , eNoBlck );
       //!!  LOG1( "ies(r-mf) - " );
       //!!  }
@@ -893,16 +895,18 @@ int main( int argc , char **argv )
      else {  // change via call to chg_* method
       // in 50% of the cases a direct call, otherwise use the methods factory
       //!! if( dis( rg ) <= 0.5 ) {
-       mMCFB->chg_ucaps( newcaps.begin() , std::move( nms ) , true );
+       mMCFB->chg_ucaps( Block::MF_dbl_sp( newcaps ) , std::move( nms ) ,
+                         true );
        LOG1( "ies(s) - " );
       //!!  }
       //!! else {
       //!!  std::string mthd_name = "MCFBlock::chg_ucaps";
       //!!  const auto * mthd = Block::get_method_fs( mthd_name,
-      //!!                                      Block::MS_dbl_sbst::args() );
+      //!!                                    Block::MS_sp_dbl_sbst::args() );
       //!!  assert( mthd_name == Block::get_method_name_fs
-      //!!          ( mthd , Block::MS_dbl_sbst::args() ) );
-      //!!  std::invoke( *mthd , mMCFB , newcaps.begin() , std::move( nms ) ,
+      //!!          ( mthd , Block::MS_sp_dbl_sbst::args() ) );
+      //!!  std::invoke( *mthd , mMCFB , Block::MF_dbl_sp( newcaps ) ,
+      //!!               std::move( nms ) ,
        //!!              true , eNoBlck , eNoBlck );
       //!!  LOG1( "ies(s-mf) - " );
       //!!  }

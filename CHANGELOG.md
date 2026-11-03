@@ -7,6 +7,94 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-03
+
+### Added
+
+- the makefiles build the C++20 module `smspp.mcfclasssolver` when
+  `SMSppMOD` is not empty (e.g., `make SMSppMOD=1`), with clang++ 16 or
+  later [see `lib/makefile-mod` of SMS++]
+
+- `MCFClassSolver_tolerance_test` checks that each `MCFSolver` of
+  `test/MCFBSCfg-tol.txt` says infeasible on the infeasible instances with
+  fractional costs `test/data/infeas-frac-*.dmx`, with a limit on the
+  iterations so that one which pivots for ever fails instead of hanging,
+  and so does `MCFSimplex` once `test/MCFBSCfg-tol-dual.txt` turns it to
+  the dual simplex
+
+- the C++20 module `smspp.mcfclasssolver` (`src/MCFClassSolver.cppm`), which
+  exports every name that the headers declare at namespace scope and
+  re-exports `smspp.mcfblock`, so that a source file can write `import
+  smspp.mcfclasssolver;` in place of the `#include` of the headers; it is
+  built with the CMake option `SMSpp_BUILD_MODULE`, as the target
+  `SMS++::MCFClassSolver_module`
+
+### Changed
+
+- the tester passes the costs and the capacities to `MCFBlock` as spans
+
+- the README leaves the channels that distribute SMS++ to the
+  installation guide of the wiki (Installing-SMS++), keeping the names
+  of the packages of the module
+
+- the pipeline builds the module also with its makefiles, after CMake, and
+  runs on a change of the makefiles too [see `ci/makefile` of the umbrella]
+
+- `SMSpp_BUILD_MODULE` no longer stops the configuration when the C++20
+  module cannot be built, i.e., with a CMake older than 3.28, a generator
+  other than Ninja or Visual Studio, a compiler other than Clang 16 (with
+  `clang-scan-deps`) or MSVC 19.34, or a module it imports that is not
+  there: the option is turned off with a warning that says why, and the
+  build goes on with the headers [see `cmake/CheckModule.cmake` of SMS++]
+
+- the test `MCFClassSolver_run_dmx2nc4` sets up the fixture
+  `dmx2nc4_generated` of the MCFBlock suite and shares its lock `mcf_data`
+
+### Fixed
+
+- on Windows, the executables that copy their DLLs next to themselves
+  are linked one at a time (a job pool of Ninja), since two copies of the
+  same DLL into one directory collided (e.g., with the clang++ of MSYS2)
+
+- `MCFClass` at the commit whose `cmake/FindCPLEX.cmake` searches CPLEX
+  again when one of its cached paths no longer exists (e.g., in a build
+  directory configured once outside and once inside a container), rather
+  than stopping the configuration on reading the version from a header
+  that is not there
+
+- with the compilers of MinGW (MSYS2) the target asks whoever links it
+  for the symbol that forces the module in, as with MSVC and on macOS:
+  the linker imports a DLL only for the symbols asked for, so that a
+  program that used none had the module left out and its classes
+  missing from the factory
+
+- `test/makefile` compiles `test.cpp` with MCFSimplex when MCFCplex is
+  not there, as CMake does (`WHICH_MCF=2`), and so builds without CPLEX
+
+- MCFClass compiles MCFCplex with its makefiles only if CPLEX is there, so
+  that the makefiles build without CPLEX
+
+- the makefile defines `HAVE_CPLEX` only if MCFClass compiles `MCFCplex`,
+  which it does only if CPLEX is there
+
+- the makefiles of the tests and of the tools build also with g++: they
+  take the option that stops at the first error and the one of the
+  debugging information, which clang++ and g++ spell differently
+  (`-ferror-limit=1` and `-glldb` against `-fmax-errors=1` and `-ggdb`),
+  from `SMSppSWERR` and `SMSppSWDBG` of `lib/makefile-OS` of SMS++
+
+- `MCFSimplex` of the MCFClass submodule solves with a tolerance of the
+  reduced costs not below the rounding of its potentials, which are of the
+  order of the cost of its artificial arcs: with a smaller `kEpsCst` it
+  pivoted for ever on an infeasible instance with fractional costs, e.g.,
+  the MCF R3Block of a CapacitatedFacilityLocationBlock after closing
+  facilities
+
+- `MCFSimplex` of the MCFClass submodule keeps its candidate lists when it
+  is switched between primal and dual simplex (`kAlgPrimal`) on an instance
+  already loaded: they were deleted with the structures of the old algorithm
+  and the first pivot dereferenced a null pointer
+
 ## [0.3.0] - 2026-10-09
 
 ### Added
@@ -158,6 +246,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   RPATH relative to itself, so that an installed tree keeps working wherever
   it is moved
 
-[Unreleased]: https://gitlab.com/smspp/mcfclasssolver/-/compare/0.3.0...develop
+[Unreleased]: https://gitlab.com/smspp/mcfclasssolver/-/compare/0.4.0...develop
+[0.4.0]: https://gitlab.com/smspp/mcfclasssolver/-/compare/0.3.0...0.4.0
 [0.3.0]: https://gitlab.com/smspp/mcfclasssolver/-/compare/0.2.0...0.3.0
 [0.2.0]: https://gitlab.com/smspp/mcfclasssolver/-/compare/0.1.0...0.2.0

@@ -1,0 +1,9 @@
+c infeasible MCF with fractional costs: the supply of node 1 does not cover
+c the demands of nodes 2 and 3, so the artificial arcs of MCFSimplex keep
+c their flow and the potentials stay of the order of their cost
+p min 3 2
+n 1 1
+n 2 -2
+n 3 -2
+a 1 2 0 10 0.1
+a 1 3 0 10 0.1

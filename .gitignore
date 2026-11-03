@@ -4,6 +4,7 @@
 
 # --- Project-specific ---------------------------------------
 test/MCFClassSolver_test
+test/MCFClassSolver_tolerance_test
 
 # --- C/C++ build artifacts ----------------------------------
 *.o

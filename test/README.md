@@ -18,6 +18,16 @@ over a set of them; all of them passing is a good sign that no regressions have
 been introduced. The `makefile` builds the executable including the
 `MCFClassSolver` and `MCFBlock` modules and the core SMS++ library.
 
+`MCFClassSolver_tolerance_test` (`test_tolerance.cpp`) reads a DIMACS
+instance, applies to it the `BlockSolverConfig` given one after the other, and
+after each of them checks that every registered `MCFSolver` returns the
+expected status. It is run on the infeasible instances with fractional costs
+`data/infeas-frac-*.dmx`, on which a solver that takes the rounding of the
+reduced costs for a violation pivots for ever: `MCFBSCfg-tol.txt` registers
+the solvers and limits the iterations, so that such a solver stops and the
+test fails, and `MCFBSCfg-tol-dual.txt` then turns `MCFSimplex` to the dual
+simplex on the instance it has already loaded.
+
 
 ## Authors
 
