@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `MCFSolver` loaded an `MCFBlock` with its closed and deleted arcs open,
+  when attached and when reloading it after an `NBModification`, since
+  neither the capacities nor the costs say them: it now closes and deletes
+  them in the `:MCFClass` object too, so that, e.g., the `MCFSolver` of a
+  copy made after some arcs were closed no longer puts flow on them
+
+- the tester returned 0 also when a check failed, so that neither the
+  `batch` files nor CTest saw the failure; it also checks that an
+  `MCFSolver` attached after the changes finds the same optimum
+
 ## [0.4.0] - 2026-11-03
 
 ### Added
