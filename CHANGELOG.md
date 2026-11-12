@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `MCFSolver` left `kEpsFlw` to the absolute default of `MCFClass`, 100
+  times the machine epsilon, which is below the rounding of flows larger
+  than about 100: with fractional deficits the flow left on the artificial
+  arcs by the rounding made `MCFSimplex` and `RelaxIV` declare a feasible
+  instance infeasible; `dblFAccSol` is now 1e-12 by default, a relative
+  tolerance, which gives way to a `dblAbsAcc` that is set
+
 - `MCFSolver` loaded an `MCFBlock` with its closed and deleted arcs open,
   when attached and when reloading it after an `NBModification`, since
   neither the capacities nor the costs say them: it now closes and deletes

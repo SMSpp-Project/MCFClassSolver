@@ -256,8 +256,13 @@ public:
  * MCFClass scales by the number of nodes into kEpsDfct. They are computed
  * again only after a change of the data, and
  * they take the place of any absolute value given to kEpsCst (dblAAccDSol)
- * and kEpsFlw (dblAbsAcc). By default (0) they are not used, and the
- * tolerances are the absolute ones of MCFClass.
+ * and kEpsFlw (dblAbsAcc). By default dblRelAcc is 0, i.e., kEpsCst is the
+ * absolute one of MCFClass, while dblFAccSol is 1e-12: the default kEpsFlw
+ * of MCFClass, 100 times the machine epsilon, is below the rounding of
+ * flows larger than about 100, so that the flow left on the artificial
+ * arcs by the rounding of fractional data made a feasible instance look
+ * infeasible; the default dblFAccSol gives way to a dblAbsAcc that is set,
+ * while a dblFAccSol that is set takes the place of it as above.
  *
  *  @{ */
 
@@ -324,9 +329,12 @@ public:
    }
   if( par == dblFAccSol ) {  // a relative tolerance of flows and deficits
    f_rel_flw = value;
+   f_rel_flw_set = true;
    f_eps_stale = true;
    return;
    }
+  if( par == dblAbsAcc )  // an absolute one, before the default relative
+   f_abs_flw_set = true;
   auto idx = Solver_2_MCFClass_dbl( par );
   if( idx >= 0 )
    MCFC::SetPar( idx , double( value ) );
@@ -718,8 +726,10 @@ public:
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
  
  [[nodiscard]] double get_dflt_dbl_par( idx_type par ) const override {
-  if( ( par == dblRelAcc ) || ( par == dblFAccSol ) )
+  if( par == dblRelAcc )
    return( 0 );  // no relative tolerance [see scale_eps()]
+  if( par == dblFAccSol )
+   return( 1e-12 );  // a relative tolerance [see scale_eps()]
   return( CDASolver::get_dflt_dbl_par( par ) );
   }
 
@@ -971,7 +981,9 @@ protected:
  std::string f_dmx_file;  // string for DMX file output
 
  double f_rel_cst = 0;      // dblRelAcc, the relative tolerance of the costs
- double f_rel_flw = 0;      // dblFAccSol, the one of flows and deficits
+ double f_rel_flw = 1e-12;  // dblFAccSol, the one of flows and deficits
+ bool f_rel_flw_set = false;  // whether dblFAccSol was set
+ bool f_abs_flw_set = false;  // whether dblAbsAcc was set
  bool f_eps_stale = true;   // whether the data changed since scale_eps()
 
 /*--------------------------------------------------------------------------*/
@@ -992,7 +1004,7 @@ protected:
     cmax = std::max( cmax , std::abs( double( c ) ) );
    MCFC::SetPar( MCFClass::kEpsCst , f_rel_cst * ( cmax > 0 ? cmax : 1 ) );
    }
-  if( f_rel_flw > 0 ) {
+  if( ( f_rel_flw > 0 ) && ( f_rel_flw_set || ( ! f_abs_flw_set ) ) ) {
    double fmax = 0;
    for( auto u : MCFB->get_U() )
     if( u < Inf< double >() )
