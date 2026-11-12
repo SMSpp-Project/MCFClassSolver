@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `MCFClass::LoadDMX` could not read a DIMACS file with an infinite
+  capacity, written as `inf` by `WriteMCF` and as `+Inf` by
+  `MCFBlock::print`; it now reads them as `Inf< FNumber >()`
+
 - `MCFSolver` left `kEpsFlw` to the absolute default of `MCFClass`, 100
   times the machine epsilon, which is below the rounding of flows larger
   than about 100: with fractional deficits the flow left on the artificial
