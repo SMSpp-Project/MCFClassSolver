@@ -565,7 +565,8 @@ public:
   }
 
 /*--------------------------------------------------------------------------*/
- /// the Solution is filled from the data of the MCFClass, not from the Variable
+ /// the Solution is filled from the data of the MCFClass, not from the
+ /// Variable
 
  [[nodiscard]] bool is_get_Solution_physical( void ) const override {
   return( true );
@@ -598,8 +599,8 @@ public:
   * MCFBlock. To keep the same format as MCFBlock::get_Solution() and
   * MCFBlock::map[forward/back]_Modification(), the Configuration *solc can
   * be used to "partly" save it. In particular, if solc != nullptr, it is
-  * a SimpleConfiguration< int >, and solc->f_value == 2, then *nothing is done*,
-  * since the Configuration is meant to say "only save/map the dual
+  * a SimpleConfiguration< int >, and solc->f_value == 2, then *nothing is
+  * done*, since the Configuration is meant to say "only save/map the dual
   * information". In all other cases, the direction (cycle) is saved.
   *
   * The direction is one unit of flow along the cycle the :MCFClass gives as
@@ -635,10 +636,10 @@ public:
   * variables of the flow conservation ones. To keep the same format as
   * MCFBlock::get_Solution() and MCFBlock::map[forward/back]_Modification(),
   * the Configuration *solc can be used to "partly" save it. In particular, if
-  * solc != nullptr, it is a SimpleConfiguration< int >, and solc->f_value == 1,
-  * then *nothing is done*, since the Configuration is meant to say "only
-  * save/map the primal information". In all other cases, the direction (cut)
-  * is saved.
+  * solc != nullptr, it is a SimpleConfiguration< int >, and
+  * solc->f_value == 1, then *nothing is done*, since the Configuration is
+  * meant to say "only save/map the primal information". In all other cases,
+  * the direction (cut) is saved.
   *
   * Or, rather, THIS SHOULD BE DONE, BUT THE METHOD IS NOT IMPLEMENTED yet. */
 
