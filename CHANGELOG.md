@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- the installed module `smspp.mcfclasssolver` could not be imported, since
+  its package gave the interface of the module the target of the library by
+  its name in the build tree, which an installed package does not have
+
 - `MCFClass::LoadDMX` could not read a DIMACS file with an infinite
   capacity, written as `inf` by `WriteMCF` and as `+Inf` by
   `MCFBlock::print`; it now reads them as `Inf< FNumber >()`
