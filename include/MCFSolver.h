@@ -256,8 +256,13 @@ public:
  * MCFClass scales by the number of nodes into kEpsDfct. They are computed
  * again only after a change of the data, and
  * they take the place of any absolute value given to kEpsCst (dblAAccDSol)
- * and kEpsFlw (dblAbsAcc). By default (0) they are not used, and the
- * tolerances are the absolute ones of MCFClass.
+ * and kEpsFlw (dblAbsAcc). By default dblRelAcc is 0, i.e., kEpsCst is the
+ * absolute one of MCFClass, while dblFAccSol is 1e-12: the default kEpsFlw
+ * of MCFClass, 100 times the machine epsilon, is below the rounding of
+ * flows larger than about 100, so that the flow left on the artificial
+ * arcs by the rounding of fractional data made a feasible instance look
+ * infeasible; the default dblFAccSol gives way to a dblAbsAcc that is set,
+ * while a dblFAccSol that is set takes the place of it as above.
  *
  *  @{ */
 
@@ -282,12 +287,7 @@ public:
 
    // load the new MCFBlock into the :MCFClass object
    f_eps_stale = true;  // [see scale_eps()]
-   MCFC::LoadNet( MCFB->get_MaxNNodes() , MCFB->get_MaxNArcs() ,
-		  MCFB->get_NNodes() , MCFB->get_NArcs() ,
-		  MCFB->get_U().empty() ? nullptr : MCFB->get_U().data() ,
-		  MCFB->get_C().empty() ? nullptr : MCFB->get_C().data() ,
-		  MCFB->get_B().empty() ? nullptr : MCFB->get_B().data() ,
-		  MCFB->get_SN().data() , MCFB->get_EN().data() );
+   load_net( MCFB );
    // TODO: PreProcess() changes the internal data of the MCFSolver using
    //       information about how the data of the MCF is *now*. If the data
    //       changes, some of the deductions (say, reducing the capacity but
@@ -329,9 +329,12 @@ public:
    }
   if( par == dblFAccSol ) {  // a relative tolerance of flows and deficits
    f_rel_flw = value;
+   f_rel_flw_set = true;
    f_eps_stale = true;
    return;
    }
+  if( par == dblAbsAcc )  // an absolute one, before the default relative
+   f_abs_flw_set = true;
   auto idx = Solver_2_MCFClass_dbl( par );
   if( idx >= 0 )
    MCFC::SetPar( idx , double( value ) );
@@ -562,7 +565,8 @@ public:
   }
 
 /*--------------------------------------------------------------------------*/
- /// the Solution is filled from the data of the MCFClass, not from the Variable
+ /// the Solution is filled from the data of the MCFClass, not from the
+ /// Variable
 
  [[nodiscard]] bool is_get_Solution_physical( void ) const override {
   return( true );
@@ -595,8 +599,8 @@ public:
   * MCFBlock. To keep the same format as MCFBlock::get_Solution() and
   * MCFBlock::map[forward/back]_Modification(), the Configuration *solc can
   * be used to "partly" save it. In particular, if solc != nullptr, it is
-  * a SimpleConfiguration< int >, and solc->f_value == 2, then *nothing is done*,
-  * since the Configuration is meant to say "only save/map the dual
+  * a SimpleConfiguration< int >, and solc->f_value == 2, then *nothing is
+  * done*, since the Configuration is meant to say "only save/map the dual
   * information". In all other cases, the direction (cycle) is saved.
   *
   * The direction is one unit of flow along the cycle the :MCFClass gives as
@@ -632,10 +636,10 @@ public:
   * variables of the flow conservation ones. To keep the same format as
   * MCFBlock::get_Solution() and MCFBlock::map[forward/back]_Modification(),
   * the Configuration *solc can be used to "partly" save it. In particular, if
-  * solc != nullptr, it is a SimpleConfiguration< int >, and solc->f_value == 1,
-  * then *nothing is done*, since the Configuration is meant to say "only
-  * save/map the primal information". In all other cases, the direction (cut)
-  * is saved.
+  * solc != nullptr, it is a SimpleConfiguration< int >, and
+  * solc->f_value == 1, then *nothing is done*, since the Configuration is
+  * meant to say "only save/map the primal information". In all other cases,
+  * the direction (cut) is saved.
   *
   * Or, rather, THIS SHOULD BE DONE, BUT THE METHOD IS NOT IMPLEMENTED yet. */
 
@@ -723,8 +727,10 @@ public:
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
  
  [[nodiscard]] double get_dflt_dbl_par( idx_type par ) const override {
-  if( ( par == dblRelAcc ) || ( par == dblFAccSol ) )
+  if( par == dblRelAcc )
    return( 0 );  // no relative tolerance [see scale_eps()]
+  if( par == dblFAccSol )
+   return( 1e-12 );  // a relative tolerance [see scale_eps()]
   return( CDASolver::get_dflt_dbl_par( par ) );
   }
 
@@ -870,16 +876,8 @@ public:
   * (because the name of, say, a newly created arc depends on the current
   * state and/or number of the arcs).
   *
-  * Important note: THIS VERSION ONLY WORKS PROPERLY IF THE MCFBlock IS
-  * "FRESHLY MINTED", I.E., THERE ARE NO CLOSED OR DELETED ARCS.
-  *
-  * This should ordinarily always happen, as whenever the MCFBlock is changed
-  * the NBModification is immediately issued. The problem may come if the
-  * MCFBlock is a R3Block of another MCFBlock which is loaded and then
-  * further modified, and the NBModification to this MCFBlock is generated by
-  * a map_forward_Modification() of the NBModification to the original
-  * MCFBlock: then, this MCFBlock may be copied from a MCFBlock that has
-  * closed or deleted arcs and this method would not work. */
+  * The closed and deleted arcs of the MCFBlock are closed and deleted in
+  * the :MCFClass object too [see load_net()]. */
 
  void add_Modification( sp_Mod &mod ) override {
   if( std::dynamic_pointer_cast< const NBModification >( mod ) ) {
@@ -887,12 +885,7 @@ public:
    // the MCFClass solver also has to (immediately)
    auto MCFB = static_cast< MCFBlock * >( f_Block );
    f_eps_stale = true;  // [see scale_eps()]
-   MCFC::LoadNet( MCFB->get_MaxNNodes() , MCFB->get_MaxNArcs() ,
-		  MCFB->get_NNodes() , MCFB->get_NArcs() ,
-		  MCFB->get_U().empty() ? nullptr : MCFB->get_U().data() ,
-		  MCFB->get_C().empty() ? nullptr : MCFB->get_C().data() ,
-		  MCFB->get_B().empty() ? nullptr : MCFB->get_B().data() ,
-		  MCFB->get_SN().data() , MCFB->get_EN().data() );
+   load_net( MCFB );
    // TODO: PreProcess() changes the internal data of the MCFSolver using
    //       information about how the data of the MCF is *now*. If the
    //       data changes, some of the deductions (say, reducing the capacity
@@ -919,6 +912,27 @@ public:
 /*--------------------------------------------------------------------------*/
 
 protected:
+
+/*--------------------------------------------------------------------------*/
+ /// loads the MCFBlock into the :MCFClass object
+ /** Loads the MCFBlock into the :MCFClass object, its closed and deleted
+  * arcs comprised: neither U nor C says them, since a closed arc is a fixed
+  * Variable and a deleted one has a NaN cost. */
+
+ void load_net( MCFBlock * MCFB ) {
+  MCFC::LoadNet( MCFB->get_MaxNNodes() , MCFB->get_MaxNArcs() ,
+		 MCFB->get_NNodes() , MCFB->get_NArcs() ,
+		 MCFB->get_U().empty() ? nullptr : MCFB->get_U().data() ,
+		 MCFB->get_C().empty() ? nullptr : MCFB->get_C().data() ,
+		 MCFB->get_B().empty() ? nullptr : MCFB->get_B().data() ,
+		 MCFB->get_SN().data() , MCFB->get_EN().data() );
+  for( MCFBlock::Index i = 0 ; i < MCFB->get_NArcs() ; ++i )
+   if( MCFB->is_deleted( i ) )
+    MCFC::DelArc( i );
+   else
+    if( MCFB->is_closed( i ) )
+     MCFC::CloseArc( i );
+  }
 
 /*--------------------------------------------------------------------------*/
 /*-------------------------- PROTECTED METHODS -----------------------------*/
@@ -968,7 +982,9 @@ protected:
  std::string f_dmx_file;  // string for DMX file output
 
  double f_rel_cst = 0;      // dblRelAcc, the relative tolerance of the costs
- double f_rel_flw = 0;      // dblFAccSol, the one of flows and deficits
+ double f_rel_flw = 1e-12;  // dblFAccSol, the one of flows and deficits
+ bool f_rel_flw_set = false;  // whether dblFAccSol was set
+ bool f_abs_flw_set = false;  // whether dblAbsAcc was set
  bool f_eps_stale = true;   // whether the data changed since scale_eps()
 
 /*--------------------------------------------------------------------------*/
@@ -989,7 +1005,7 @@ protected:
     cmax = std::max( cmax , std::abs( double( c ) ) );
    MCFC::SetPar( MCFClass::kEpsCst , f_rel_cst * ( cmax > 0 ? cmax : 1 ) );
    }
-  if( f_rel_flw > 0 ) {
+  if( ( f_rel_flw > 0 ) && ( f_rel_flw_set || ( ! f_abs_flw_set ) ) ) {
    double fmax = 0;
    for( auto u : MCFB->get_U() )
     if( u < Inf< double >() )

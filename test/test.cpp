@@ -108,6 +108,7 @@
 #endif
 
 #include "MCFSolver.h"
+#include "SMSTerminate.h"
 #include "UpdateSolver.h"
 
 /*--------------------------------------------------------------------------*/
@@ -470,23 +471,6 @@ static bool SolveMCF( void )
   exit( 1 );
   }
  }
-
-/*--------------------------------------------------------------------------*/
-/// Custom terminate function to print the exception message
-
-void smspp_terminate( void ) {
- std::cerr << "Uncaught exception in executing SMS++:\n";
- try {
-  std::rethrow_exception( std::current_exception() );
- }
- catch( const std::exception & e ) {
-  std::cerr << "\tException type: " << typeid( e ).name() << "\n";
-  std::cerr << "\tException message: " << e.what() << "\n";
- } catch( ... ) {
-  std::cerr << "\tUnknown exception" << std::endl;
- }
- std::abort(); // or exit(1)
-}
 
 /*--------------------------------------------------------------------------*/
 
@@ -1223,6 +1207,27 @@ int main( int argc , char **argv )
   }  // end( main loop )- - - - - - - - - - - - - - - - - - - - - - - - - - -
      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+ // a MCFSolver attached now loads the MCFBlock with the arcs closed and
+ // deleted by the changes above, and finds the optimum of the MCFClass
+ if( mcf->MCFGetStatus() == MCFClass::kOK ) {
+  auto NS = new MCFSolver< MCFC >();
+  sMCFB->register_Solver( NS );
+  NS->set_par( Solver::dblAbsAcc ,
+	       BA * std::max( u_max , std::max( b_abs , FNumber( 1 ) ) ) );
+  NS->set_par( CDASolver::dblAAccDSol ,
+	       BA * std::max( c_abs , CNumber( 1 ) ) );
+  int rtrn = NS->compute( false );
+  auto fo1 = mcf->MCFGetFO();
+  auto fo2 = NS->get_ub();
+  if( ( rtrn < Solver::kOK ) || ( rtrn >= Solver::kError ) ||
+      ( abs( fo1 - fo2 )
+	> 1e-9 * max( double( 1 ) , abs( max( fo1 , fo2 ) ) ) ) ) {
+   std::cerr << "a MCFSolver attached after the changes gives " << fo2
+	     << " instead of " << fo1 << std::endl;
+   OK = false;
+   }
+  }
+
  if( OK )
   cout << GREEN( All test passed!! ) << endl;
  else
@@ -1245,7 +1250,7 @@ int main( int argc , char **argv )
  // terminate - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
- return( 0 );
+ return( OK ? 0 : 1 );
 
  }  // end( main )
 

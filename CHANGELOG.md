@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-16
+
+### Fixed
+
+- the tester uses `smspp_terminate()` of the core, with which it aborts with
+  a message when `std::terminate()` is called with no exception, e.g., by the
+  destructor of a `std::thread` that can still be joined, where rethrowing
+  the null exception crashed
+
+- the installed module `smspp.mcfclasssolver` could not be imported, since
+  its package gave the interface of the module the target of the library by
+  its name in the build tree, which an installed package does not have
+
+- `MCFClass::LoadDMX` could not read a DIMACS file with an infinite
+  capacity, written as `inf` by `WriteMCF` and as `+Inf` by
+  `MCFBlock::print`; it now reads them as `Inf< FNumber >()`
+
+- `MCFSolver` left `kEpsFlw` to the absolute default of `MCFClass`, 100
+  times the machine epsilon, which is below the rounding of flows larger
+  than about 100: with fractional deficits the flow left on the artificial
+  arcs by the rounding made `MCFSimplex` and `RelaxIV` declare a feasible
+  instance infeasible; `dblFAccSol` is now 1e-12 by default, a relative
+  tolerance, which gives way to a `dblAbsAcc` that is set
+
+- `MCFSolver` loaded an `MCFBlock` with its closed and deleted arcs open,
+  when attached and when reloading it after an `NBModification`, since
+  neither the capacities nor the costs say them: it now closes and deletes
+  them in the `:MCFClass` object too, so that, e.g., the `MCFSolver` of a
+  copy made after some arcs were closed no longer puts flow on them
+
+- the tester returned 0 also when a check failed, so that neither the
+  `batch` files nor CTest saw the failure; it also checks that an
+  `MCFSolver` attached after the changes finds the same optimum
+
 ## [0.4.0] - 2026-11-03
 
 ### Added
@@ -246,7 +280,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   RPATH relative to itself, so that an installed tree keeps working wherever
   it is moved
 
-[Unreleased]: https://gitlab.com/smspp/mcfclasssolver/-/compare/0.4.0...develop
+[Unreleased]: https://gitlab.com/smspp/mcfclasssolver/-/compare/0.5.0...develop
+[0.5.0]: https://gitlab.com/smspp/mcfclasssolver/-/compare/0.4.0...0.5.0
 [0.4.0]: https://gitlab.com/smspp/mcfclasssolver/-/compare/0.3.0...0.4.0
 [0.3.0]: https://gitlab.com/smspp/mcfclasssolver/-/compare/0.2.0...0.3.0
 [0.2.0]: https://gitlab.com/smspp/mcfclasssolver/-/compare/0.1.0...0.2.0
