@@ -12,19 +12,9 @@
 
 # The classes of the modules register themselves in the factories from
 # static objects, which nothing here names: a shared library is kept by
-# what its module asks of the linker [see the CMakeLists.txt of the
-# module], while an archive has to be taken whole.
-if (NOT BUILD_SHARED_LIBS)
-    if (MSVC)
-        add_link_options("/WHOLEARCHIVE" "/FORCE:MULTIPLE")
-    else () # Unix
-        if (APPLE)
-            add_link_options("-Wl,-all_load")
-        else ()
-            add_link_options("-Wl,--whole-archive,--allow-multiple-definition")
-        endif ()
-    endif ()
-endif ()
+# what its module asks of the linker, while an archive has to be taken
+# whole [see SMSppModule.cmake of SMS++].
+smspp_keep_modules()
 
 # ----- MCFClassSolver_test and MCFClassSolver_tolerance_test --------------- #
 add_executable(${modName}_test test.cpp)
@@ -33,25 +23,7 @@ add_executable(${modName}_tolerance_test test_tolerance.cpp)
 foreach (_exe ${modName}_test ${modName}_tolerance_test)
     target_link_libraries(${_exe} PRIVATE SMS++::MCFClassSolver)
 
-    if (WIN32 AND BUILD_SHARED_LIBS AND NOT DEFINED ENV{CONDA_BUILD})
-        # On Windows with shared libraries enabled copies all runtime DLL
-        # dependencies next to the executable in the build directory
-        # (POST_BUILD), using CMake's TARGET_RUNTIME_DLLS generator expression
-        add_custom_command(TARGET ${_exe} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                $<TARGET_RUNTIME_DLLS:${_exe}>
-                $<TARGET_FILE_DIR:${_exe}>
-                COMMAND_EXPAND_LISTS
-                COMMENT "Copying runtime DLLs next to ${_exe}.exe")
-        # one link at a time, since two copies of the same DLL into a
-        # directory collide, and Ninja links in parallel
-        get_property(_pools GLOBAL PROPERTY JOB_POOLS)
-        if (NOT _pools MATCHES "smspp_runtime_dlls=")
-            set_property(GLOBAL APPEND PROPERTY JOB_POOLS smspp_runtime_dlls=1)
-        endif ()
-        set_property(TARGET ${_exe}
-                     PROPERTY JOB_POOL_LINK smspp_runtime_dlls)
-    endif ()
+    smspp_copy_runtime(${_exe})
 endforeach ()
 
 # the netCDF instances dmx2nc4 writes out of those of data/dmx, when the tests
@@ -70,18 +42,10 @@ file(GLOB BATCH_FILES "${CMAKE_CURRENT_SOURCE_DIR}/batch"
 foreach (BATCH_FILE ${BATCH_FILES})
     # Remove the source directory prefix to get the batch name
     string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" BATCH_NAME ${BATCH_FILE})
-    if (UNIX)
-        add_test(NAME ${modName}_test/${BATCH_NAME}
-                 COMMAND bash ${BATCH_FILE}
-                         ${CMAKE_CURRENT_BINARY_DIR}/${modName}_test
-                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-    elseif (WIN32)
-        add_test(NAME ${modName}_test/${BATCH_NAME}
-                 # using Git for Windows that includes Git Bash
-                 COMMAND "C:/Program Files/Git/bin/bash.exe"
-                 "${BATCH_FILE}" "$<TARGET_FILE:${modName}_test>"
-                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-    endif ()
+    add_test(NAME ${modName}_test/${BATCH_NAME}
+             COMMAND ${SMSpp_BASH}
+             "${BATCH_FILE}" "$<TARGET_FILE:${modName}_test>"
+             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     # batch-l reads the larger instances produced by dmx2nc4
     if (BATCH_NAME STREQUAL "batch-l")
         set_tests_properties(${modName}_test/${BATCH_NAME}
